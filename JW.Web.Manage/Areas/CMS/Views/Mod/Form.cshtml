@@ -1,0 +1,68 @@
+﻿@model JW.Domain.CMS.Entity.ModelEntity
+
+@{
+    ViewBag.Title = "模型表单";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+
+<form class="form-horizontal m-t" id="modForm">
+    <input type="hidden" asp-for="M_ID" />
+    <div class="form-group">
+        <label class="col-sm-2 control-label">模型名称：*</label>
+        <div class="col-sm-10">
+            <input asp-for="M_NAME" class="form-control required" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">模型表名：*</label>
+        <div class="col-sm-10">
+            <input asp-for="M_TABLENAME" class="form-control required" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">后台管理URL：*</label>
+        <div class="col-sm-10">
+            <input asp-for="M_MANAGEURL" class="form-control required" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">模型描述：</label>
+        <div class="col-sm-10">
+            <input asp-for="M_DESCRIPTION" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">排序值：*</label>
+        <div class="col-sm-10">
+            <input asp-for="M_ORDERID" class="form-control required digits" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">是否禁用：</label>
+        <div class="col-sm-10">
+            <label class="checkbox-inline i-checks">
+                <input asp-for="M_DISABLED" />
+            </label>
+        </div>
+    </div> 
+</form>
+<script type="text/javascript"> 
+    $(document).ready(function () {
+        $('.i-checks').iCheck({
+            checkboxClass: 'icheckbox_square-green'
+        });
+    }); 
+    function submitForm() {
+        if (!$('#modForm').formValid()) {
+            return false;
+        }
+        $.submitForm({
+            url: "/CMS/Mod/SubmitForm",
+            param: $("#modForm").formSerialize(),
+            success: function () {
+                $.currentWindow().$("#gridList").bootstrapTable('refresh');
+            }
+        })
+    }
+</script>
+

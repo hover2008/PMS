@@ -1,0 +1,87 @@
+﻿
+@model JW.Domain.BasePromptModel
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>提示信息</title>
+    <link type="text/css" href="/css/bootstrap.min.css" rel="stylesheet" />
+    <link type="text/css" href="/css/font-awesome.css" rel="stylesheet" />
+    <link type="text/css" href="/css/animate.css" rel="stylesheet" />
+    <link type="text/css" href="/css/style.css" rel="stylesheet" />
+    @{
+        if (Model.IsAutoBack)
+        {
+            if (Model.CountdownModel == 0)
+            {
+                <meta http-equiv="refresh" content="@Model.CountdownTime;URL=@Model.BackUrl" />
+            }
+            else
+            {
+                <script type="text/javascript">
+            window.onload = function(){
+            var time = @Model.CountdownTime; //设置时间为几秒
+            var timer = document.getElementById('timer'); //获取ID为timer的对象
+            timer.innerHTML = time; //初始化显示秒数
+            var g = window.setInterval(function(){
+            if(time<=1){
+                window.clearTimeout(g); //清除动画
+                window.location.href = '@Model.BackUrl'; //跳转到指定地址
+                //window.history.back(-1); //后退
+            } else {
+                showTime();
+            }
+            },1000);
+            //显示函数
+            function showTime(){
+                time--;
+                timer.innerHTML = time;
+            }
+            };
+                </script>
+            }
+        }
+    }
+</head>
+<body>
+    <div class="row  border-bottom white-bg dashboard-header">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                友情提示
+            </div>
+            <div class="panel-body">
+                <h3>@Model.Message</h3>
+                @{
+                    if (Model.IsAutoBack)
+                    {
+                        <p>
+                            如果您不做出选择，将在
+                            @{
+                                if (Model.CountdownModel == 0)
+                                {
+                                    @Model.CountdownTime
+                                }
+                                else
+                                {
+                                    <span id="timer">@Model.CountdownTime</span>
+                                }
+                            }
+                            秒后自动返回
+                        </p>
+                        if (Model.IsShowBackLink)
+                        {
+                            <a href="@Model.BackUrl">←点击返回</a>
+                        }
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</body>
+</html>

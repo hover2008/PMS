@@ -1,0 +1,135 @@
+﻿@using AS = JW.Services.CMS.Singleton.AttachmentSettingsSingleton;
+@inject JW.Core.Encrypt.DESEncrypt desEncrypt;
+@model JW.Domain.CMS.Entity.AdvertEntity
+
+@{
+    ViewBag.Title = "广告表单";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<link type="text/css" href="/js/plugins/webuploader/webuploader.css" rel="stylesheet" />
+<form class="form-horizontal m-t" id="advForm">
+    <input type="hidden" asp-for="A_ID" />
+    <input type="hidden" asp-for="A_TYPEID" />
+    <input type="hidden" asp-for="A_STARTTIME" />
+    <input type="hidden" asp-for="A_ENDTIME" />
+    <div class="form-group">
+        <label class="col-sm-2 control-label">标题：*</label>
+        <div class="col-sm-10">
+            <input asp-for="A_TITLE" class="form-control required" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">简介：</label>
+        <div class="col-sm-10">
+            <input asp-for="A_SUMMARY" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">时间范围：*</label>
+        <div class="col-sm-10">
+            <input type="text" class="form-control required" id="txtDateTime" name="txtDateTime" value="@Model.A_STARTTIME.ToString("yyyy-MM-dd HH:mm:ss") ~ @Model.A_ENDTIME.ToString("yyyy-MM-dd HH:mm:ss")" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">排序值：*</label>
+        <div class="col-sm-10">
+            <input asp-for="A_ORDERID" class="form-control required digits" />
+            值越小，前端显示越靠前
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">链接地址：*</label>
+        <div class="col-sm-10">
+            <input asp-for="A_URL" class="form-control required url" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">状态：</label>
+        <div class="col-sm-10">
+            <label class="radio-inline i-checks">
+                <input type="radio" name="A_STATE" value="0" @(Model.A_STATE == 0 ? "checked='checked'" : "")>隐藏
+            </label>
+            <label class="radio-inline i-checks">
+                <input type="radio" name="A_STATE" value="1" @(Model.A_STATE == 1 ? "checked='checked'" : "")>展示
+            </label>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">图片：</label>
+        <div class="col-sm-10">
+            <div id="upload_pic_info"></div>
+            <!--用来存放文件信息-->
+            <div id="uploader" class="wu-example">
+                <!--用来存放item-->
+                <div id="picList" class="filelist">
+                </div>
+                <div id="picPicker">选择图片</div>
+            </div>
+            <h5>上传大小不能超过为 @AS.Singleton.UploadImgMaxSize KB，只能上传1张</h5>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-sm-12 col-sm-offset-5">
+            <button class="btn btn-white" type="reset" style="margin-right:40px">重置</button>
+            <button class="btn btn-primary" type="button" onclick="submitForm()">保存</button>
+        </div>
+    </div>
+</form>
+<script src="/js/plugins/layer/laydate/laydate.js" type="text/javascript"></script>
+<script src="/js/plugins/webuploader/webuploader.min.js" type="text/javascript"></script>
+<script src="/js/webuploader-img-custom.js" type="text/javascript"></script> 
+<script type="text/javascript">
+    var UPLOAD_SINGLE_SIZE_LIMIT = @AS.Singleton.UploadImgMaxSize*1024;
+    var UPLOAD_SINGLE_SIZE_LIMIT_TEXT = "@AS.Singleton.UploadImgMaxSize KB";
+    var UPLOAD_EXT = "@AS.Singleton.UploadImgExt";
+    var UPLOAD_DIR = "adv";
+    var UPLOAD_KEY = "@AS.Singleton.FileServerMD5Key";
+    var LIMIT_NUM = 1;  //限制上传的图片数
+    $(document).ready(function () {
+        $('.i-checks').iCheck({ 
+            radioClass: 'iradio_square-green',
+        });
+        var pic = "@Model.A_PicUrl";
+        if (pic != "") {
+            $(".file-panel").css("height", '0');
+            setPic(0, pic, "@desEncrypt.Encrypt(Model.A_PicUrl)");
+        }
+    });
+    //日期时间范围
+    laydate.render({
+        elem: '#txtDateTime'
+        , type: 'datetime'
+        , theme: 'molv'
+        , range: '~'
+        , change: function (value, date, endDate) {
+            if (value) {
+                var dt = value.split("~");
+                $("#A_STARTTIME").val(dt[0]);
+                $("#A_ENDTIME").val(dt[1]);
+            } else {
+                $("#A_STARTTIME").val("");
+                $("#A_ENDTIME").val("");
+            }
+        }
+    });
+    function submitForm() {
+        if (!$('#advForm').formValid()) {
+            return false;
+        }
+        var $hfPic = $("input[name='hidPic']");
+        var photo = "";
+        if ($hfPic.length > 0) {
+            photo = $.trim($("input[name='hidPic']").val());
+        }
+        var param = $("#advForm").formSerialize();
+        param["A_PicUrl"] = photo;
+        $.submitForm({
+            url: "/CMS/Advert/SubmitForm",
+            param: param,
+            success: function () {
+                location.href ="/CMS/Advert/Index?tid=@Model.A_TYPEID";
+            }
+        })
+    }
+</script>
+

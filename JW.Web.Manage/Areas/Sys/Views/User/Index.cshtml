@@ -1,0 +1,154 @@
+﻿
+@{
+    ViewBag.Title = "用户管理";
+    Layout = "~/Views/Shared/_Index.cshtml";
+}
+<div class="panel panel-default">
+    <div class="panel-heading">
+        查询条件
+    </div>
+    <div class="panel-body">
+        <form id="CK-table-form">
+            <div class="col-sm-3"> 
+                <input type="text" class="form-control" id="txtName" name="txtName" placeholder="在用户名中搜索">
+            </div>
+            <div class="col-sm-3">
+                <input type="text" class="form-control" id="txtRealName" name="txtRealName" placeholder="在真实姓名中搜索">
+            </div>
+            <div class="col-sm-4">
+                <input type="text" class="form-control" id="txtMobile" name="txtMobile" placeholder="在手机号中搜索">
+            </div>
+            <div class="col-sm-1">
+                <button id="CK-table-search" type="button" class="btn btn-default">
+                    <span class="glyphicon glyphicon-search" aria-hidden="true"></span>搜索
+                </button>
+            </div>
+            <div class="col-sm-1">
+                <button id="CK-table-reset" type="button" class="btn btn-default">
+                    <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>重置
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<div id="gridListToolbar">
+    <button id="CK-AB-add" ck-authorize="yes" class="btn btn-outline btn-default" type="button">
+        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>新增
+    </button>
+    <button id="CK-AB-edit" ck-authorize="yes" class="btn btn-outline btn-default" type="button">
+        <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>编辑
+    </button>
+    <button id="CK-AB-view" ck-authorize="yes" class="btn btn-outline btn-default" type="button">
+        <span class="glyphicon glyphicon-heart" aria-hidden="true"></span>查看
+    </button>
+    <script>var ckCurrentCode = "AB"; $("#gridListToolbar").authorizeButton();</script>
+</div>
+<table id="gridList" data-toggle="table" data-select-item-name="userItem" data-mobile-responsive="true">
+    <thead>
+        <tr>
+            <th data-checkbox-field="U_ID" data-checkbox="true"></th>
+            <th data-formatter="indexFormatter" data-align="center" data-width="50px">#</th>
+            <th data-field="U_NAME" data-width="100px" data-align="center" data-sortable="true">用户名</th>
+            <th data-field="U_REALNAME" data-width="100px" data-align="center" data-sortable="true">真实姓名</th>
+            <th data-field="U_DISABLED" data-formatter="disabledFormatter" data-width="100px" data-align="center">有效</th>
+            <th data-field="U_EMAIL" data-width="160px" data-align="center">电子邮箱</th>
+            <th data-field="U_MOBILE" data-width="120px" data-align="center">手机号码</th>
+            <th data-field="U_TEL" data-width="120px" data-align="center">座机号</th>
+            <th data-field="U_PREVLOGINTIME" data-width="150px" data-align="center" data-sortable="true">最近登录时间</th>
+            <th data-field="U_PREVLOGINIP" data-width="110px" data-align="center" data-sortable="true">最近登录IP</th>
+        </tr>
+    </thead>
+</table>
+<script type="text/javascript">
+    var $table = $('#gridList');
+    (function () {
+        $table.tableGrid({
+            url: "/Sys/User/GetGridJson?r=" + Math.random(),
+            uniqueId: "U_ID",                   //每一行的唯一标识，一般为主键列
+            sortName: "U_ID",
+            queryParams: function (param) {
+                return {
+                    pageSize: param.pageSize,
+                    pageIndex: param.pageNumber,
+                    sortName: param.sortName,
+                    sortOrder: param.sortOrder,
+                    name: $.trim($("#txtName").val()),
+                    realName: $.trim($("#txtRealName").val()),
+                    mobile: $.trim($("#txtMobile").val())
+
+                };
+            },//传递参数（*）
+        });
+        $('#gridListToolbar button').on('click', function () {
+            var othis = $(this),
+                index = othis.attr("id");
+            switch (index) {
+                case "CK-AB-add":
+                    save(0);
+                    break;
+                case "CK-AB-edit":
+                case "CK-AB-view":
+                    var txt = "编辑";
+                    if (index == "CK-AB-view") { txt = "查看"; }
+                    var $selectOptions = $table.bootstrapTable('getSelections');
+                    if ($selectOptions.length > 1) {
+                        toastr.warning('只能选择一行进行' + txt);
+                        return;
+                    }
+                    if ($selectOptions.length < 1) {
+                        toastr.warning('请选择需要' + txt + '的选项');
+                        return;
+                    }
+                    var id = $selectOptions[0].U_ID;
+                    if (index == "CK-AB-view") { view(id); return; }
+                    save(id);
+                    break;
+            }
+        }); 
+        $("#CK-table-search").click(function () {
+            $table.tableGridRefresh();
+        });
+        $("#CK-table-reset").click(function () { 
+            $(":input", "#CK-table-form").not(':button').val(''); 
+            $table.tableGridRefresh();
+        });
+    })();
+    function disabledFormatter(value, row, index) {
+        return value == false ? "<i class=\"fa fa-toggle-on\" onclick='set(" + row.U_ID + ",true)'></i>" : "<i class=\"fa fa-toggle-off\" onclick='set(" + row.U_ID + ",false)'></i>"; 
+    }
+    function save(id) {
+        var title = "新增用户";
+        if (id > 0) {
+            title = "编辑用户";
+        }
+        $.modalOpen({
+            id: "Form",
+            title: title,
+            url: '/Sys/User/Form?id=' + id + '&r=' + Math.random(),
+            width: "900px",
+            height: "600px",
+            callBack: function (iframeId) {
+                top.frames[iframeId].submitForm();
+            }
+        });
+    }
+    function view(id) {
+        $.modalOpen({
+            id: "Form",
+            title: "查看系统用户",
+            url: '/Sys/User/Detials?id=' + id + '&?r=' + Math.random(),
+            width: "900px",
+            height: "600px",
+            btn: []
+        });
+    }
+    function set(id, action) {
+        $.submitForm({
+            url: "/Sys/User/Set?r=" + Math.random(),
+            param: { 'id': id, 'action': action },
+            success: function () {
+                $table.tableGridRefresh();
+            }
+        })
+    }
+</script>

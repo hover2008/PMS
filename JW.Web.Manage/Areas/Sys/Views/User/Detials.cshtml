@@ -1,0 +1,97 @@
+﻿@model  JW.Domain.Sys.ResposneEntity.UserDetialsEntity
+
+@{
+    ViewBag.Title = "用户详情";
+    Layout = "~/Views/Shared/_Detials.cshtml";
+}
+
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>账号信息</h5>
+            </div>
+            <div class="ibox-content">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <tbody>
+                            <tr>
+                                <th>用户名</th>
+                                <td>@Model.User.U_NAME</td>
+                                <th>是否禁用</th>
+                                <td>@(Model.User.U_DISABLED ? "是" : "否")</td>
+                            </tr>
+                            <tr>
+                                <th>所属角色</th>
+                                <td colspan="3">@String.Join(",",Model.RoleNames)</td>
+                            </tr>
+                            <tr>
+                                <th>上次登录时间</th>
+                                <td>@(Model.User.U_PREVLOGINTIME.HasValue ? Model.User.U_PREVLOGINTIME.Value.ToString() : "")</td>
+                                <th>上次登录IP</th>
+                                <td>@Model.User.U_PREVLOGINIP</td>
+                            </tr>
+                            <tr>
+                                <th>最近登录时间</th>
+                                <td>@(Model.User.U_LASTLOGINTIME.HasValue ? Model.User.U_LASTLOGINTIME.Value.ToString() : "")</td>
+                                <th>最近登录IP</th>
+                                <td>@Model.User.U_LASTLOGINIP</td>
+                            </tr>
+                            <tr>
+                                <th>登录总次数</th>
+                                <td>@Model.User.U_LOGINTIMES</td>
+                                <th>创建时间</th>
+                                <td>@Model.User.U_CREATETIME.ToString()</td>
+                            </tr>
+                            <tr>
+                                <th>更新时间</th>
+                                <td>@Model.User.U_UPDATETIME.ToString()</td>
+                                <th>最近修改密码时间</th>
+                                <td>@Model.User.U_LASTMODIFYPASSWORDTIME.ToString()</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>个人信息</h5>
+            </div>
+            <div class="ibox-content">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <tbody>
+                            <tr>
+                                <th>真实姓名</th>
+                                <td>@Model.User.U_REALNAME</td>
+                                <th>电子邮箱</th>
+                                <td>@Model.User.U_EMAIL</td>
+                            </tr>
+                            <tr>
+                                <th>手机号码</th>
+                                <td>@Model.User.U_MOBILE</td>
+                                <th>座机号码</th>
+                                <td>@Model.User.U_TEL</td>
+                            </tr>
+                            <tr>
+                                <th>头像</th>
+                                <td colspan="3">
+                                    @if (Model.User.U_PHOTO != null && Model.User.U_PHOTO.Length > 0)
+                                    {
+                                    <img alt="image" class="img-circle" style="width:70px;height:70px" src="@Model.User.U_PHOTO" />
+                                    }
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,126 @@
+﻿
+@{
+    ViewBag.Title = "字典管理";
+    Layout = "~/Views/Shared/_Index_2.cshtml";
+}
+<div class="panel-body">
+    <div class="col-sm-7" id="gridListToolbar">
+        <button id="CK-BG-add" ck-authorize="yes" class="btn btn-outline btn-default" type="button">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>新增
+        </button>
+        <button id="CK-BG-edit" ck-authorize="yes" class="btn btn-outline btn-default" type="button">
+            <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>编辑
+        </button> 
+        <button id="CK-BG-up" ck-authorize="yes" class="btn btn-outline btn-default" type="button">
+            <span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span>上移
+        </button>
+        <button id="CK-BG-down" ck-authorize="yes" class="btn btn-outline btn-default" type="button">
+            <span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span>下移
+        </button>
+        <script>var ckCurrentCode = "BG"; $("#gridListToolbar").authorizeButton();</script>
+    </div>
+    <div class="col-sm-3">
+        <input id="txt_keyword" type="text" class="form-control" placeholder="在名称中搜索">
+    </div>
+    <div class="col-sm-1">
+        <button id="btn_search" type="button" class="btn btn-default">
+            <span class="glyphicon glyphicon-search" aria-hidden="true"></span>搜索
+        </button>
+    </div>
+    <div class="col-sm-1">
+        <button id="btn_refresh" type="button" class="btn btn-default">
+            <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>重置
+        </button>
+    </div>
+</div>
+<table id="gridList"></table>
+<script type="text/javascript">
+    var $gridList = $("#gridList");
+    $(function () {
+        $(window).resize(function () {
+            $gridList.setGridWidth($(window).width());
+            $gridList.setGridHeight($(window).height() - 106);
+        });
+        gridList();
+        $('#gridListToolbar button').on('click', function () {
+            var othis = $(this),
+                index = othis.attr("id");
+            switch (index) {
+                case "CK-BG-add":
+                    save(0);
+                    break;
+                case "CK-BG-edit":
+                case "CK-BG-up":
+                case "CK-BG-down": 
+                    var id = $gridList.jqGrid("getGridParam", "selrow");
+                    if (id) {
+                        if (index == "CK-BG-edit") { save(id); } 
+                        else {
+                            set(id, index);
+                        } 
+                    } else {
+                        toastr.warning("请选择需要操作的选项");
+                    }
+                    break;
+            }
+        });
+    }) 
+    function gridList() {
+        $gridList.dataGrid({
+            treeGrid: true,
+            treeGridModel: "adjacency",
+            ExpandColumn: "D_REMARK",  
+            url: "/CMS/Dic/GetTreeGridJson?r=" + Math.random(),
+            colModel: [
+                { label: "主键", name: "D_ID", hidden: true, key: true },
+                { label: '名称', name: 'D_NAME', align: 'left' },
+                { label: '备注', name: 'D_REMARK', align: 'left' },
+                {
+                    label: "有效", name: "D_DISABLED", align: "center",
+                    formatter: function (cellvalue, options, rowObject) {
+                        var id = rowObject["D_ID"];
+                        return cellvalue == false ? "<i class=\"fa fa-toggle-on\" onclick='set(" + id + ",\"disabled\")'></i>" : "<i class=\"fa fa-toggle-off\" onclick='set(" + id + ",\"undisabled\")'></i>";
+                    }
+                } 
+            ]
+        });
+        $("#btn_search").click(function () {
+            $gridList.jqGrid('setGridParam', {
+                postData: { keyword: $("#txt_keyword").val() },
+            }).trigger('reloadGrid');
+        });
+        $("#btn_refresh").click(function () {
+            $("#txt_keyword").val("");
+            $gridList.jqGrid('setGridParam', {
+                postData: { keyword: $("#txt_keyword").val() },
+            }).trigger('reloadGrid');
+        });
+    } 
+    function save(id) {
+        var title = "新增字典";
+        if (id > 0) {
+            title = "编辑字典";
+        }
+        $.modalOpen({
+            id: "Form",
+            title: title,
+            url: "/CMS/Dic/Form?id=" + id + "&r= " + Math.random(),
+            width: "900px",
+            height: "600px",
+            callBack: function (iframeId) {
+                top.frames[iframeId].submitForm();
+            }
+        });
+    }
+    function set(id, action) {
+        $.submitForm({
+            url: "/CMS/Dic/Set?r=" + Math.random(),
+            param: { 'id': id, 'action': action },
+            success: function () {
+                $.currentWindow().$("#gridList").resetSelection();
+                $.currentWindow().$("#gridList").trigger("reloadGrid");
+            }
+        })
+    }
+</script>
+

@@ -1,0 +1,99 @@
+﻿@model JW.Domain.CMS.Settings.SMSSettings
+@{
+    ViewBag.Title = "短信配置表单";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+
+<form class="form-horizontal m-t" id="smsForm" autocomplete="off">
+    <div class="form-group">
+        <label class="col-sm-2 control-label">地址：*</label>
+        <div class="col-sm-10">
+            <input asp-for="Url" class="form-control required" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">账号：*</label>
+        <div class="col-sm-10">
+            <input asp-for="UserName" class="form-control required" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">密码：*</label>
+        <div class="col-sm-10">
+            <input asp-for="Password" class="form-control required" type="password" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">签名：*</label>
+        <div class="col-sm-10">
+            <input asp-for="SignName" class="form-control required" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">验证码有效时长（分钟）：*</label>
+        <div class="col-sm-10">
+            <input asp-for="VerifyExpireMinutes" class="form-control required digits" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">注册内容：*</label>
+        <div class="col-sm-10">
+            <textarea rows="3" asp-for="RegBody" class="form-control required">@Model.RegBody</textarea>
+            <label>{sitename}代表网站名称,{code}代表验证码{minutes}代表有效时长{signname}代表签名 </label>
+        </div>
+    </div>  
+    <div class="form-group">
+        <label class="col-sm-2 control-label">绑定手机号内容：*</label>
+        <div class="col-sm-10">
+            <textarea rows="3" asp-for="BindMobileBody" class="form-control required">@Model.BindMobileBody</textarea>
+            <label>{sitename}代表网站名称,{code}代表验证码{minutes}代表有效时长{signname}代表签名 </label>
+        </div>
+    </div> 
+    <div class="form-group">
+        <label class="col-sm-2 control-label">找回密码内容：*</label>
+        <div class="col-sm-10">
+            <textarea rows="3" asp-for="FindPwdBody" class="form-control required">@Model.FindPwdBody</textarea>
+            <label>{sitename}代表网站名称,{code}代表验证码{minutes}代表有效时长{signname}代表签名 </label>
+        </div>
+    </div> 
+    <div class="form-group">
+        <label class="col-sm-2 control-label">更改密码内容：*</label>
+        <div class="col-sm-10">
+            <textarea rows="3" asp-for="UpdatePwdBody" class="form-control required">@Model.UpdatePwdBody</textarea>
+            <label>{sitename}代表网站名称,{code}代表验证码{minutes}代表有效时长{signname}代表签名 </label>
+        </div>
+    </div> 
+    <div class="form-group">
+        <label class="col-sm-2 control-label">更换手机号码第一步内容：*</label>
+        <div class="col-sm-10">
+            <textarea rows="3" asp-for="UpdateMobileStep1Body" class="form-control required">@Model.UpdateMobileStep1Body</textarea>
+            <label>{sitename}代表网站名称,{code}代表验证码{minutes}代表有效时长{signname}代表签名 </label>
+        </div>
+    </div> 
+    <div class="form-group">
+        <label class="col-sm-2 control-label">更换手机号码第二步内容：*</label>
+        <div class="col-sm-10">
+            <textarea rows="3" asp-for="UpdateMobileStep2Body" class="form-control required">@Model.UpdateMobileStep2Body</textarea>
+            <label>{sitename}代表网站名称,{code}代表验证码{minutes}代表有效时长{signname}代表签名 </label>
+        </div>
+    </div> 
+    <div class="form-group">
+        <div class="col-sm-12 col-sm-offset-3">
+            <button class="btn btn-white" type="reset" style="margin-right:40px">重置</button>
+            <button class="btn btn-primary" type="button" id="btnSubmit">提交</button>
+        </div>
+    </div>
+</form>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#btnSubmit").click(function () {
+            if (!$('#smsForm').formValid()) {
+                return false;
+            }
+            $.ajaxCustom({ 
+                url: "/CMS/Setting/SMS",
+                param: $("#smsForm").formSerialize()
+            })
+        })
+    });
+</script>

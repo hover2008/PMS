@@ -1,0 +1,116 @@
+﻿@model JW.Domain.Sys.Entity.UserEntity
+
+@{
+    ViewBag.Title = "用户修改密码表单";
+    Layout = "~/Views/Shared/_Form.cshtml";
+} 
+<script src="/js/plugins/md5/jquery.md5.js" type="text/javascript"></script>
+<form class="form-horizontal m-t" id="pwdForm">
+    <div class="form-group">
+        <label class="col-sm-1 control-label">用户名：</label>
+        <div class="col-sm-8">
+            <label class="control-label">@Model.U_NAME</label>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-1 control-label">旧密码：*</label>
+        <div class="col-sm-8">
+            <input id="txtOldPwd" name="txtOldPwd" class="form-control" type="password" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-1 control-label">新密码：*</label>
+        <div class="col-sm-8">
+            <input id="txtNewPwd" name="txtNewPwd" class="form-control" type="password" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-1 control-label">确认密码：*</label>
+        <div class="col-sm-8">
+            <input id="txtCNewPwd" name="txtCNewPwd" class="form-control" type="password" />
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-sm-8 col-sm-offset-3">
+            <button class="btn btn-white" type="reset" style="margin-right:40px">重置</button>
+            <button class="btn btn-primary" type="submit">提交</button>
+        </div>
+    </div>
+</form>
+<script type="text/javascript">
+        $().ready(function () {
+            // validate signup form on keyup and submit
+            var icon = "<i class='fa fa-times-circle'></i> ";
+            $("#pwdForm").validate({
+                rules: {
+                    txtOldPwd: {
+                        required: true,
+                        minlength: 6,
+                        maxlength:20,
+                        isPWD:true
+                    },
+                    txtNewPwd: {
+                        required: true,
+                        minlength: 6,
+                        maxlength: 20,
+                        isPWD:true
+                    },
+                    txtCNewPwd: {
+                        required: true,
+                        minlength: 6,
+                        maxlength: 20,
+                        isPWD:true,
+                        equalTo: "#txtNewPwd"
+                    }
+                },
+                messages: {
+                    txtOldPwd: {
+                        required: icon + "请输入旧密码",
+                        minlength: icon + "密码必须最少6个字符",
+                        maxlength: icon + "密码必须最多20个字符",
+                    },
+                    txtNewPwd: {
+                        required: icon + "请输入新密码",
+                        minlength: icon + "密码必须最少6个字符",
+                        maxlength: icon + "密码必须最多20个字符",
+                    },
+                    txtCNewPwd: {
+                        required: icon + "请再次输入密码",
+                        minlength: icon + "密码必须最少6个字符",
+                        maxlength: icon + "密码必须最多20个字符",
+                        equalTo: icon + "两次输入的密码不一致"
+                    }
+                },
+                submitHandler: function (form) {
+                    $.ajax({
+                        url: "/Sys/User/SubmitModifyPwd",
+                        data: {
+                            'opwd': $.md5($("#txtOldPwd").val()), 'npwd': $.md5($("#txtNewPwd").val()), "__RequestVerificationToken": $('[name=__RequestVerificationToken]').val()
+                        },
+                        type: "post",
+                        dataType: "json",
+                        cache: !1,
+                        success: function (result) {
+                            $.modalMsg(result.Msg, result.Success);
+                            if (result.Success) {
+                                location.href = "/Login/Index";
+                            }
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            $.loading(false);
+                            $.modalMsg(errorThrown, false);
+                        },
+                        beforeSend: function () {
+                            $.loading(true, "正在提交数据...");
+                        },
+                        complete: function () {
+                            $.loading(false);
+                        }
+                    }) 
+                }
+            });
+            $("#reset").click(function () {
+                validator.resetForm();
+            });
+        });
+</script>

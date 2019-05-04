@@ -1,0 +1,60 @@
+﻿@model JW.Domain.Sys.Entity.RoleEntity;
+@{
+    ViewBag.Title = "角色表单";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<form class="form-horizontal m-t" id="roleForm">
+    <input type="hidden" asp-for="R_ID" />
+    <div class="form-group">
+        <label class="col-sm-2 control-label">角色名称：*</label>
+        <div class="col-sm-8">
+            <input asp-for="R_NAME" class="form-control required" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">角色描述：*</label>
+        <div class="col-sm-8">
+            <input asp-for="R_DESC" class="form-control required" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">排序编号：*</label>
+        <div class="col-sm-8">
+            <input asp-for="R_ORDERID" class="form-control required digits" />
+        </div>
+    </div>
+</form>
+<script type="text/javascript">
+    var keyValue = $("#R_ID").val();
+    $(document).ready(function () {
+        if (!keyValue && keyValue == "0") {
+            getOrderId();
+        }
+    }); 
+    function getOrderId() {
+        $.ajax({
+            type: "POST",
+            url: "/Sys/Role/GetOrderId",
+            data: {},
+            dataType: "json",
+            cache: !1,
+            success: function (result) {
+                if (result.Success) {
+                    $("#R_ORDERID").val(result.Msg);
+                }
+            }
+        });
+    }
+    function submitForm() {
+        if (!$('#roleForm').formValid()) {
+            return false;
+        }
+        $.submitForm({
+            url: "/Sys/Role/SubmitForm",
+            param: $("#roleForm").formSerialize(),
+            success: function () {
+                $.currentWindow().$("#gridList").bootstrapTable('refresh');
+            }
+        })
+    }
+</script>

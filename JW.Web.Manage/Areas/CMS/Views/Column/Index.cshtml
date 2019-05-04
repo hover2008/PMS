@@ -1,0 +1,151 @@
+﻿
+@{
+    ViewBag.Title = "栏目列表";
+    Layout = "~/Views/Shared/_Index_2.cshtml";
+}
+<div class="panel-body" id="gridListToolbar">
+    <div class="col-sm-7">
+        <button id="CK-BE-add" ck-authorize="yes" class="btn btn-outline btn-default" type="button">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>新增栏目
+        </button>
+        <button id="CK-BE-addsingle" ck-authorize="yes" class="btn btn-outline btn-default" type="button">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>新增单网页
+        </button>
+        <button id="CK-BE-addlink" ck-authorize="yes" class="btn btn-outline btn-default" type="button">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>新增外部链接
+        </button>
+        <button id="CK-BE-edit" ck-authorize="yes" class="btn btn-outline btn-default" type="button">
+            <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>编辑
+        </button>
+        <button id="CK-BE-up" ck-authorize="yes" class="btn btn-outline btn-default" type="button">
+            <span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span>上移
+        </button>
+        <button id="CK-BE-down" ck-authorize="yes" class="btn btn-outline btn-default" type="button">
+            <span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span>下移
+        </button>
+        <script>var ckCurrentCode = "BE"; $("#gridListToolbar").authorizeButton();</script>
+    </div>
+    <div class="col-sm-3">
+        <input id="txt_keyword" type="text" class="form-control" placeholder="在名称中搜索">
+    </div>
+    <div class="col-sm-1">
+        <button id="btn_search" type="button" class="btn btn-default">
+            <span class="glyphicon glyphicon-search" aria-hidden="true"></span>搜索
+        </button>
+    </div>
+    <div class="col-sm-1">
+        <button id="btn_refresh" type="button" class="btn btn-default">
+            <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>重置
+        </button>
+    </div>
+</div>
+<table id="gridList"></table>
+<script type="text/javascript">
+    var $gridList = $("#gridList");
+    $(function () {
+        $(window).resize(function () {
+            $gridList.setGridWidth($(window).width());
+            $gridList.setGridHeight($(window).height() - 106);
+        });
+        gridList();
+        $('#gridListToolbar button').on('click', function () {
+            var othis = $(this),
+                index = othis.attr("id");
+            switch (index) {
+                case "CK-BE-add":
+                    save(0, 10002, "新增栏目");
+                    break;
+                case "CK-BE-addsingle":
+                    save(0, 10003, "新增单网页");
+                    break;
+                case "CK-BE-addlink":
+                    save(0, 10004, "新增外部链接");
+                    break;
+                case "CK-BE-edit":
+                case "CK-BE-up":
+                case "CK-BE-down":
+                    var id = $gridList.jqGrid("getGridParam", "selrow");
+                    if (id) {
+                        if (index == "CK-BE-edit") {
+                            var rowData = $gridList.jqGrid("getRowData", id);
+                            var typeId = rowData.C_TYPEID;
+                            var title = "编辑栏目";
+                            if (typeId == 10003) {
+                                title = "编辑单网页";
+                            }
+                            else if(typeId == 10004) {
+                                title = "编辑外部链接";
+                            }
+                            save(id, typeId, title);
+                        }
+                        else{ 
+                            set(id, index);
+                        }
+                    } else {
+                        toastr.warning("请选择需要操作的选项");
+                    }
+                    break;
+            }
+        });
+    })
+    function gridList() {
+        $gridList.dataGrid({
+            treeGrid: true,
+            treeGridModel: "adjacency",
+            ExpandColumn: "C_ENAME",
+            url: "/CMS/Column/GetTreeGridJson?r=" + Math.random(),
+            colModel: [
+                { label: "主键", name: "C_ID", hidden: true, key: true },
+                { label: "类型编号", name: "C_TYPEID", hidden: true},
+                { label: '名称', name: 'C_NAME', align: 'left' },
+                { label: '英文名称', name: 'C_ENAME', align: 'left' },
+                { label: '栏目类型', name: 'D_NAME', align: 'center' },
+                { label: '所属模型', name: 'M_NAME', align: 'center' },
+                { label: '链接地址', name: 'C_LINK', align: 'center' },
+                {
+                    label: "有效", name: "C_DISABLED", align: "center",
+                    formatter: function (cellvalue, options, rowObject) {
+                        var id = rowObject["C_ID"];
+                        return cellvalue == false ? "<i class=\"fa fa-toggle-on\" onclick='set(" + id + ",\"disabled\")'></i>" : "<i class=\"fa fa-toggle-off\" onclick='set(" + id + ",\"undisabled\")'></i>";
+                    }
+                }
+            ]
+        });
+        $("#btn_search").click(function () {
+            $gridList.jqGrid('setGridParam', {
+                postData: { keyword: $("#txt_keyword").val() },
+            }).trigger('reloadGrid');
+        });
+        $("#btn_refresh").click(function () {
+            $("#txt_keyword").val("");
+            $gridList.jqGrid('setGridParam', {
+                postData: { keyword: $("#txt_keyword").val() },
+            }).trigger('reloadGrid');
+        });
+    }
+    function save(id, typeid, title) {
+        $.modalOpen({
+            id: "Form",
+            title: title,
+            url: "/CMS/Column/Form?id=" + id + "&typeid=" + typeid + "&r=" + Math.random(),
+            width: "900px",
+            height: "600px",
+            callBack: function (iframeId) {
+                top.frames[iframeId].submitForm();
+            }
+        });
+    }
+    function set(id, action) {
+        $.submitForm({
+            url: "/CMS/Column/Set?r=" + Math.random(),
+            param: { 'id': id, 'action': action },
+            success: function () {
+                $.currentWindow().$("#gridList").resetSelection();
+                $.currentWindow().$("#gridList").trigger("reloadGrid");
+            }
+        })
+    }
+</script>
+
+
+

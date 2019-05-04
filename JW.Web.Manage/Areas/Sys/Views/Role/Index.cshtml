@@ -1,0 +1,172 @@
+﻿@{
+    ViewBag.Title = "角色管理";
+    Layout = "~/Views/Shared/_Index.cshtml";
+}
+<div class="panel panel-default">
+    <div class="panel-heading">
+        查询条件
+    </div>
+    <div class="panel-body">
+        <form id="CK-table-form">
+            <div class="col-sm-3">
+                <input id="txtName" type="text" class="form-control" placeholder="在名称中搜索">
+            </div>
+            <div class="col-sm-1">
+                <button id="CK-table-search" type="button" class="btn btn-default">
+                    <span class="glyphicon glyphicon-search" aria-hidden="true"></span>搜索
+                </button>
+            </div>
+            <div class="col-sm-1">
+                <button id="CK-table-reset" type="button" class="btn btn-default">
+                    <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>重置
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<div id="gridListToolbar">
+    <button id="CK-AC-add" ck-authorize="yes" class="btn btn-outline btn-default" type="button">
+        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>新增
+    </button>
+    <button id="CK-AC-edit" ck-authorize="yes" class="btn btn-outline btn-default" type="button">
+        <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>编辑
+    </button>
+    <button id="CK-AC-del" ck-authorize="yes" class="btn btn-outline btn-default" type="button">
+        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>删除
+    </button>
+    <button id="CK-AC-set" ck-authorize="yes" class="btn btn-outline btn-default" type="button">
+        <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>权限设置
+    </button>
+    <button id="CK-AC-useradd" ck-authorize="yes" class="btn btn-outline btn-default" type="button">
+        <span class="glyphicon glyphicon-certificate" aria-hidden="true"></span>成员管理
+    </button>
+    <script>var ckCurrentCode = "AC"; $("#gridListToolbar").authorizeButton();</script>
+</div>
+<table id="gridList" data-toggle="table" data-select-item-name="roleItem" data-mobile-responsive="true">
+    <thead>
+        <tr>
+            <th data-checkbox-field="R_ID" data-checkbox="true"></th>
+            <th data-formatter="indexFormatter" data-align="center" data-width="50px">#</th>
+            <th data-field="R_NAME" data-width="200px" data-sortable="true">角色名称</th>
+            <th data-field="R_DESC">角色描述</th>
+            <th data-field="R_ORDERID" data-width="60px" data-align="center">排序</th>
+        </tr>
+    </thead>
+</table>
+<script type="text/javascript">
+    var $table = $('#gridList');
+    (function () {
+        $table.tableGrid({
+            url: "/Sys/Role/GetGridJson?r=" + Math.random(),
+            uniqueId: "R_ID",                   //每一行的唯一标识，一般为主键列
+            sortName: "R_ORDERID",
+            sortOrder: "asc",                   //排序方式
+            queryParams: function (param) {
+                return {
+                    pageSize: param.pageSize,
+                    pageIndex: param.pageNumber,
+                    sortName: param.sortName,
+                    sortOrder: param.sortOrder,
+                    name: $.trim($("#txtName").val())
+
+                };
+            },//传递参数（*）
+        });
+        $('#gridListToolbar button').on('click', function () {
+            var othis = $(this),
+                index = othis.attr("id");
+            switch (index) {
+                case "CK-AC-add":
+                    save(0);
+                    break;
+                case "CK-AC-edit": 
+                case "CK-AC-set":
+                case "CK-AC-useradd":
+                    var txt = "编辑";
+                    if (index == "CK-AC-del") { txt = "删除"; }
+                    else if (index == "CK-AC-set") { txt = "权限设置"; }
+                    else if (index == "CK-AC-useradd") { txt = "成员管理"; }
+                    var $selectOptions = $table.bootstrapTable('getSelections');
+                    if ($selectOptions.length > 1) {
+                        toastr.warning('只能选择一行进行' + txt);
+                        return;
+                    }
+                    if ($selectOptions.length < 1) {
+                        toastr.warning('请选择需要' + txt + '的选项');
+                        return;
+                    }
+                    var id = $selectOptions[0].R_ID;
+                    var name = $selectOptions[0].R_NAME;
+                    if (index == "CK-AC-edit") { save(id); } 
+                    else if (index == "CK-AC-set") { setRule(id, name); }
+                    else if (index == "CK-AC-useradd") { addUser(id, name); }
+                    break;
+                case "CK-AC-del":
+                    var $selectOptions = $table.bootstrapTable('getSelections');
+                    if (!$selectOptions || $selectOptions.length < 1) {
+                        toastr.warning('请选择需要删除的选项');
+                        return;
+                    }
+                    var ids = [];
+                    $.each($selectOptions, function (i, item) {
+                        ids.push(item["R_ID"]);
+                    }); 
+                    $.deleteForm({
+                        url: "/Sys/Role/BatchDeleteForm?r=" + Math.random(),
+                        param: { 'ids': ids.join(',') },
+                        success: function () {
+                            $table.tableGridRefresh();
+                        }
+                    });
+                    break;
+            }
+        });
+        $("#CK-table-search").click(function () {
+            $table.tableGridRefresh();
+        });
+        $("#CK-table-reset").click(function () {
+            $(":input", "#CK-table-form").not(':button').val('');
+            $table.tableGridRefresh();
+        });
+    })();
+    function setRule(id, name) {
+        $.modalOpen({
+            id: "SetRuleForm",
+            title: '《' + name + '》权限设置',
+            url: '/Sys/Role/SetRuleForm?roleId=' + id + '&?r=' + Math.random(),
+            width: "1000px",
+            height: "600px",
+            callBack: function (iframeId) {
+                top.frames[iframeId].submitForm();
+            }
+        });
+    }
+    function addUser(id, name) {
+        $.modalOpen({
+            id: "GetUserForm",
+            title: '《' + name + '》成员管理',
+            url: '/Sys/Role/GetUserForm?roleId=' + id + '&?r=' + Math.random(),
+            width: "1000px",
+            height: "600px",
+            btn: []
+        });
+    }
+    function save(id) {
+        var title = "新增角色";
+        if (id > 0) {
+            title = "编辑角色";
+        }
+        $.modalOpen({
+            id: "Form",
+            title: title,
+            url: "/Sys/Role/Form?id=" + id + '&?r=' + Math.random(),
+            width: "800px",
+            height: "400px",
+            callBack: function (iframeId) {
+                top.frames[iframeId].submitForm();
+            }
+        });
+    } 
+</script>
+
+

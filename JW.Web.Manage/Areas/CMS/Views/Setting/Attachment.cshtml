@@ -1,0 +1,231 @@
+﻿@model JW.Domain.CMS.Settings.AttachmentSettings
+@{
+    ViewBag.Title = "附件配置表单";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+
+<form class="form-horizontal m-t" id="attachForm" autocomplete="off">
+    <div class="form-group">
+        <label class="col-sm-2 control-label">上传通讯密匙：*</label>
+        <div class="col-sm-5">
+            <input asp-for="FileServerMD5Key" placeholder="只能由数字、26个英文字母组成的6到32位字符串" class="form-control required" />
+        </div>
+        <div class="col-sm-5">
+            <button class="btn btn-primary" type="button" id="btnServerMD5Key">重新生成</button>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">是否上传至共享目录：*</label>
+        <div class="col-sm-10">
+            <label class="checkbox-inline i-checks">
+                <input type="checkbox" id="EnabledUploadShare" name="EnabledUploadShare" @(Model.EnabledUploadShare == "true" ? "checked='checked'" : "") />
+            </label>
+            <label>选中则为同台服务器不同目录或者局域网内不同机器，必须保证具有读写权限，否则为上传至当前根目录中</label>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">上传文件目录：*</label>
+        <div class="col-sm-10">
+            <input asp-for="UploadDir" class="form-control required" />
+            <label>比如：上传至共享目录为D:\uploads，上传至当前应用程序目录中为uploads</label>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">上传文件访问基地址：</label>
+        <div class="col-sm-10">
+            <input asp-for="UploadUrl" class="form-control" />
+            <label>比如：http://www.baidu.com，上传至当前应用程序目录中可以不用填写</label>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">上传文件的保存目录规则:*</label>
+        <div class="col-sm-10">
+            <select asp-for="UploadFilePathRule" class="form-control required">
+                <option value="{yyyy}{mm}{dd}">{yyyy}{mm}{dd}</option>
+                <option value="{yyyy}{mm}/{dd}">{yyyy}{mm}/{dd}</option>
+                <option value="{yyyy}/{mm}">{yyyy}/{mm}</option>
+                <option value="{folder}/{yyyy}{mm}{dd}">{folder}/{yyyy}{mm}{dd}</option>
+            </select>
+            <label>{folder}：自定义文件目录、{yyyy}：四位年份、{mm}：两位月份、{dd}：两位日期</label>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">上传文件名保存规则:*</label>
+        <div class="col-sm-10">
+            <select asp-for="FileNameRule" class="form-control required">
+                <option value="{guid}">{guid}</option>
+                <option value="{time}{rand:6}">{time}{rand:6}</option>
+                <option value="{filename}">{filename}</option>
+            </select>
+            <label>{guid}：guid、{time}：时间戳、{rand:6}：6位随机数、{filename}：原文件名</label>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">允许上传的图片类型：*</label>
+        <div class="col-sm-10">
+            <input asp-for="UploadImgExt" placeholder="比如：jpg,png,jpeg,gif" class="form-control required" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">允许上传图片大小不能超过（单位：KB）：*</label>
+        <div class="col-sm-10">
+            <input asp-for="UploadImgMaxSize" placeholder="只能填写整数，如: 100" class="form-control required digits" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">水印类型：</label>
+        <div class="col-sm-10">
+            <label class="radio-inline i-checks">
+                <input type="radio" name="WatermarkType" value="0" @(Model.WatermarkType == 0 ? " checked='checked'" : "")>无
+            </label>
+            <label class="radio-inline i-checks">
+                <input type="radio" name="WatermarkType" value="1" @(Model.WatermarkType == 1 ? " checked='checked'" : "")>文字
+            </label>
+            <label class="radio-inline i-checks">
+                <input type="radio" name="WatermarkType" value="2" @(Model.WatermarkType == 2 ? " checked='checked'" : "")>图片
+            </label>
+        </div>
+    </div>
+    <div class="form-group watermark">
+        <label class="col-sm-2 control-label">水印质量：</label>
+        <div class="col-sm-10">
+            <input asp-for="WatermarkQuality" placeholder="必须位于0到100之间" class="form-control digits" max="100" min="0" />
+        </div>
+    </div>
+    <div class="form-group watermark">
+        <label class="col-sm-2 control-label">水印位置：</label>
+        <div class="col-sm-10">
+            <label class="radio-inline i-checks">
+                <input type="radio" name="WatermarkPosition" value="1" @(Model.WatermarkPosition == 1 ? " checked='checked'" : "")>上左
+            </label>
+            <label class="radio-inline i-checks">
+                <input type="radio" name="WatermarkPosition" value="2" @(Model.WatermarkPosition == 2 ? " checked='checked'" : "")>上中
+            </label>
+            <label class="radio-inline i-checks">
+                <input type="radio" name="WatermarkPosition" value="3" @(Model.WatermarkPosition == 3 ? " checked='checked'" : "")>上右
+            </label>
+            <label class="radio-inline i-checks">
+                <input type="radio" name="WatermarkPosition" value="4" @(Model.WatermarkPosition == 4 ? " checked='checked'" : "")>中左
+            </label>
+            <label class="radio-inline i-checks">
+                <input type="radio" name="WatermarkPosition" value="5" @(Model.WatermarkPosition == 5 ? " checked='checked'" : "")>中中
+            </label>
+            <label class="radio-inline i-checks">
+                <input type="radio" name="WatermarkPosition" value="6" @(Model.WatermarkPosition == 6 ? " checked='checked'" : "")>中右
+            </label>
+            <label class="radio-inline i-checks">
+                <input type="radio" name="WatermarkPosition" value="7" @(Model.WatermarkPosition == 7 ? " checked='checked'" : "")>下左
+            </label>
+            <label class="radio-inline i-checks">
+                <input type="radio" name="WatermarkPosition" value="8" @(Model.WatermarkPosition == 8 ? " checked='checked'" : "")>下中
+            </label>
+            <label class="radio-inline i-checks">
+                <input type="radio" name="WatermarkPosition" value="9" @(Model.WatermarkPosition == 9 ? " checked='checked'" : "")>下右
+            </label>
+        </div>
+    </div>
+    <div class="form-group watermark image">
+        <label class="col-sm-2 control-label">水印图片：</label>
+        <div class="col-sm-10">
+            <input asp-for="WatermarkImg" class="form-control" />
+            <label>必须是"wwwroot/images"文件夹中图片</label>
+        </div>
+    </div>
+    <div class="form-group watermark image">
+        <label class="col-sm-2 control-label">图片透明度：</label>
+        <div class="col-sm-10">
+            <input asp-for="WatermarkImgOpacity" placeholder="必须位于1到10之间" class="form-control digits" max="10" min="1" />
+        </div>
+    </div>
+    <div class="form-group watermark text">
+        <label class="col-sm-2 control-label">水印文字：</label>
+        <div class="col-sm-10">
+            <input asp-for="WatermarkText" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group watermark text">
+        <label class="col-sm-2 control-label">文字字体：</label>
+        <div class="col-sm-10">
+            @Html.DropDownListFor(x => x.WatermarkTextFont, ViewData["fontList"] as List<SelectListItem>, new { @class = "form-control" })
+        </div>
+    </div>
+    <div class="form-group watermark text">
+        <label class="col-sm-2 control-label">文字大小：</label>
+        <div class="col-sm-10">
+            <input asp-for="WatermarkTextSize" class="form-control digits" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">商品展示缩略图：</label>
+        <div class="col-sm-10">
+            <input asp-for="ProductShowThumbSize" class="form-control" />
+            <label>格式为"宽_高",如果有多个用","分割</label>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-sm-12 col-sm-offset-3">
+            <button class="btn btn-white" type="reset" style="margin-right:40px">重置</button>
+            <button class="btn btn-primary" type="button" id="btnSubmit">提交</button>
+        </div>
+    </div>
+</form>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('.i-checks').iCheck({
+            radioClass: 'iradio_square-green',
+            checkboxClass: 'icheckbox_square-green'
+        });
+        if ($("input:radio[name='WatermarkType']:checked").val() == "1") {
+            $(".watermark").show();
+            $(".image").hide();
+        }
+        else if ($("input:radio[name='WatermarkType']:checked").val() == "2") {
+            $(".watermark").show();
+            $(".text").hide();
+        }
+        else {
+            $(".watermark").hide();
+        }
+
+        $("input:radio[name='WatermarkType']").on('ifChecked', function () {
+            if ($(this).val() == "1") {
+                $(".watermark").show();
+                $(".image").hide();
+            }
+            else if ($(this).val() == "2") {
+                $(".watermark").show();
+                $(".text").hide();
+            }
+            else {
+                $(".watermark").hide();
+            }
+        });
+        $("#UploadFilePathRule").val("@Model.UploadFilePathRule");
+        $("#FileNameRule").val("@Model.FileNameRule");
+        $("#btnSubmit").click(function () {
+            if (!$('#attachForm').formValid()) {
+                return false;
+            }
+            $.ajaxCustom({
+                url: "/CMS/Setting/Attachment",
+                param: $("#attachForm").formSerialize()
+            })
+        });
+        $("#btnServerMD5Key").click(function () {
+            $.ajax({
+                type: "POST",
+                url: "/CMS/Setting/GetKey",
+                dataType: "json",
+                cache: !1,
+                success: function (result) {
+                    if (result.Success) {
+                        $("#FileServerMD5Key").val(result.Msg);
+                        top.layer.msg("重新生成成功");
+                    } else {
+                        top.layer.msg(result.Msg);
+                    }
+                }
+            });
+        });
+    });
+</script>

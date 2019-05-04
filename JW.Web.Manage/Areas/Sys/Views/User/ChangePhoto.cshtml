@@ -1,0 +1,60 @@
+﻿@using AS = JW.Services.CMS.Singleton.AttachmentSettingsSingleton;
+@inject JW.Core.Encrypt.DESEncrypt desEncrypt;
+@model JW.Domain.Sys.Entity.UserEntity
+@{
+    ViewBag.Title = "用户修改头像表单";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<link type="text/css" href="/js/plugins/webuploader/webuploader.css" rel="stylesheet" />
+<div class="form-group" style="height:300px;">
+    <label class="col-sm-2 control-label">头像：</label>
+    <div class="col-sm-10">
+        <div id="upload_pic_info"></div>
+        <!--用来存放文件信息-->
+        <div id="uploader" class="wu-example">
+            <!--用来存放item-->
+            <div id="picList" class="filelist">
+            </div>
+            <div id="picPicker">选择图片</div>
+        </div>
+        <h5>上传大小不能超过为 @AS.Singleton.UploadImgMaxSize KB，只能上传1张</h5>
+    </div>
+    <div class="col-sm-12 col-sm-offset-2">
+        <button class="btn btn-primary" type="button" id="btnUploader">确认</button>
+    </div>
+</div>
+<script src="/js/plugins/webuploader/webuploader.min.js" type="text/javascript"></script>
+<script src="/js/webuploader-img-custom.js"></script>
+<script type="text/javascript">
+    var UPLOAD_SINGLE_SIZE_LIMIT = @AS.Singleton.UploadImgMaxSize*1024;
+    var UPLOAD_SINGLE_SIZE_LIMIT_TEXT = "@AS.Singleton.UploadImgMaxSize KB";
+    var UPLOAD_EXT = "@AS.Singleton.UploadImgExt";
+    var UPLOAD_DIR = "avatar";
+    var UPLOAD_KEY = "@AS.Singleton.FileServerMD5Key";
+    var LIMIT_NUM = 1;  //限制上传的图片数量
+    $(function () {
+        var pic = "@Model.U_PHOTO";
+        if (pic != "") {
+            $(".file-panel").css("height", '0');
+            setPic(0, pic, "@desEncrypt.Encrypt(Model.U_PHOTO)");
+        }
+        $("#btnUploader").click(function () {
+            if ($("input[name='hidPic']").length > 0) {
+                var photo = $.trim($("input[name='hidPic']").val());
+                $.ajax({
+                    type: "POST",
+                    url: "/Sys/User/SubmitChangePhoto",
+                    data: { 'photo': photo, "__RequestVerificationToken": $('[name=__RequestVerificationToken]').val() },
+                    dataType: "json",
+                    cache: !1,
+                    success: function (data) {
+                        $.modalMsg(data.Msg, data.Success);
+                        top.$("#user_photo").attr("src", photo);
+                    }
+                });
+            } else {
+                $.modalAlert("请选择上传的图片");
+            }
+        });
+    });
+</script>

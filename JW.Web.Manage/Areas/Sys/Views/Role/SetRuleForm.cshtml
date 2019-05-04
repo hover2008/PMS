@@ -1,0 +1,64 @@
+﻿@{
+    ViewBag.Title = "角色权限表单";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<form class="form-horizontal m-t" id="pcForm">
+    <input type="hidden" id="roleid" value="@ViewBag.RoleId" />
+    @Html.AntiForgeryToken()
+    <div class="btn-group">
+        <button class="btn btn-outline btn-default" type="button" id="btnSelectAll" style="margin-right:10px;">全选</button>
+        <button type="button" class="btn btn-outline btn-default" id="btnCancelAll">取消</button>
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th style="width:160px;">菜单名称</th>
+                <th>权限</th>
+            </tr>
+            @Html.Raw(ViewBag.PCHtml)
+        </thead>
+    </table>
+</form>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('.i-checks').iCheck({
+            checkboxClass: 'icheckbox_square-green'
+        });
+        $("input[name='chkMCodes']").each(function () {
+            var $parentTD = $(this).parent().parent().parent().siblings("td");
+            var chked = $parentTD.find("input[name='chkPCodes']").length == $parentTD.find("input[name='chkPCodes']:checked").length;
+            if (chked) {
+                $(this).iCheck('check');
+            }
+        });
+        $("input[name='chkMCodes']").on('ifClicked', function () {
+            $(this).parent().parent().parent().siblings("td").find("input[name='chkPCodes']").iCheck('check');
+        });
+        $("input[name='chkMCodes']").on('ifUnchecked', function () {
+            $(this).parent().parent().parent().siblings("td").find("input[name='chkPCodes']").iCheck('uncheck');
+        });
+        $("#btnSelectAll").click(function () {
+            $('input').iCheck('check');
+        });
+        $("#btnCancelAll").click(function () {
+            $('input').iCheck('uncheck');
+        });
+    });
+    function submitForm() {
+        var codes = [];
+        var len = $("input[name='chkPCodes']:checked").length;
+        if (len > 0) {
+            $("input[name='chkPCodes']:checked").each(function () {
+                codes.push($(this).val());
+            });
+        }
+        $.submitForm({
+            url: "/Sys/Role/SetRule?r=" + Math.random(),
+            param: {
+                'roleId': $.trim($("#roleid").val()), 'codes': codes.join(",")
+            },
+            success: function () {
+            }
+        })
+    }
+</script>

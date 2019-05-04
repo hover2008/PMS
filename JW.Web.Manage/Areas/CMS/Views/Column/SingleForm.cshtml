@@ -1,0 +1,183 @@
+﻿@using AS = JW.Services.CMS.Singleton.AttachmentSettingsSingleton;
+@inject JW.Core.Encrypt.DESEncrypt desEncrypt;
+@model JW.Domain.CMS.Entity.ColumnEntity
+
+@{
+    ViewBag.Title = "单页栏目表单";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<link type="text/css" href="/js/plugins/webuploader/webuploader.css" rel="stylesheet" />
+<form class="form-horizontal m-t" id="columnForm">
+    <input type="hidden" asp-for="C_ID" />
+    <input type="hidden" asp-for="C_TYPEID" />   
+    <div class="form-group">
+        <label class="col-sm-2 control-label">栏目名称：*</label>
+        <div class="col-sm-10">
+            <input asp-for="C_NAME" class="form-control required" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">所属栏目：*</label>
+        <div class="col-sm-10">
+            <select class="form-control m-b required" asp-for="C_PARENTID">
+                <option value="0">≡ 作为一级栏目 ≡</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">栏目英文名称：</label>
+        <div class="col-sm-10">
+            <input asp-for="C_ENAME" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">栏目提示：</label>
+        <div class="col-sm-10">
+            <input asp-for="C_Tips" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">栏目摘要：</label>
+        <div class="col-sm-10">
+            <input asp-for="C_SUMMARY" class="form-control" />
+        </div>
+    </div> 
+    <div class="form-group">
+        <label class="col-sm-2 control-label">是否顶部导航显示：</label>
+        <div class="col-sm-2">
+            <label class="checkbox-inline i-checks">
+                <input type="checkbox" asp-for="C_ISMENU" />
+            </label>
+        </div>
+        <label class="col-sm-2 control-label">是否底部导航显示：</label>
+        <div class="col-sm-2">
+            <label class="checkbox-inline i-checks">
+                <input type="checkbox" asp-for="C_ISFOOTERMENU" />
+            </label>
+        </div>
+        <label class="col-sm-2 control-label">是否禁用：</label>
+        <div class="col-sm-2">
+            <label class="checkbox-inline i-checks">
+                <input type="checkbox" asp-for="C_DISABLED" />
+            </label>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">打开方式：</label>
+        <div class="col-sm-10">
+            <label class="radio-inline i-checks">
+                <input type="radio" name="C_OPENTYPE" value="0" @(Model.C_OPENTYPE == 0 ? "checked='checked'" : "")>原窗口打开
+            </label>
+            <label class="radio-inline i-checks">
+                <input type="radio" name="C_OPENTYPE" value="1" @(Model.C_OPENTYPE == 1 ? "checked='checked'" : "")>新窗口打开
+            </label>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">此栏目下的内容打开方式：</label>
+        <div class="col-sm-10">
+            <label class="radio-inline i-checks">
+                <input type="radio" name="C_ITEMOPENTYPE" value="0" @(Model.C_ITEMOPENTYPE == 0 ? "checked='checked'" : "")> <i></i>原窗口打开
+            </label>
+            <label class="radio-inline i-checks">
+                <input type="radio" name="C_ITEMOPENTYPE" value="1" @(Model.C_ITEMOPENTYPE == 1 ? "checked='checked'" : "")> <i></i>新窗口打开
+            </label>
+        </div>
+    </div> 
+    <div class="form-group">
+        <label class="col-sm-2 control-label">SEO标题：</label>
+        <div class="col-sm-10">
+            <input asp-for="C_MATETITLE" class="form-control">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">SEO关键字：</label>
+        <div class="col-sm-10">
+            <input asp-for="C_MATEKEYWORDS" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">SEO描述：</label>
+        <div class="col-sm-10">
+            <input asp-for="C_MATEDESCRIPTION" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">栏目Banner：</label>
+        <div class="col-sm-10">
+            <div id="upload_pic_info"></div>
+            <!--用来存放文件信息-->
+            <div id="uploader" class="wu-example">
+                <!--用来存放item-->
+                <div id="picList" class="filelist">
+                </div>
+                <div id="picPicker">选择图片</div>
+            </div>
+            <h5>上传大小不能超过为 @AS.Singleton.UploadImgMaxSize KB，只能上传1张</h5>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">内容详情：</label>
+        <div class="col-sm-10">
+            <script id="txtContent" type="text/plain" style="height:300px;">
+                @Html.Raw(Model.C_CONTENT)
+            </script>
+        </div>
+    </div>
+</form>
+<script src="/js/plugins/webuploader/webuploader.min.js" type="text/javascript"></script>
+<script src="/js/webuploader-img-custom.js" type="text/javascript"></script> 
+<script src="/js/plugins/ueditor/ueditor.config.js" type="text/javascript"></script>
+<script src="/js/plugins/ueditor/ueditor.all.min.js" type="text/javascript"></script>
+<script src="/js/plugins/ueditor/ueditor.parse.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+    var UPLOAD_SINGLE_SIZE_LIMIT = @AS.Singleton.UploadImgMaxSize*1024;
+    var UPLOAD_SINGLE_SIZE_LIMIT_TEXT = "@AS.Singleton.UploadImgMaxSize KB";
+    var UPLOAD_EXT = "@AS.Singleton.UploadImgExt";
+    var UPLOAD_DIR = "image";
+    var UPLOAD_KEY = "@AS.Singleton.FileServerMD5Key";
+    var LIMIT_NUM = 1;  //限制上传的图片数 
+    var ue = UE.getEditor('txtContent');
+    $(document).ready(function () {
+        $('.i-checks').iCheck({
+            checkboxClass: 'icheckbox_square-green',
+            radioClass: 'iradio_square-green',
+        });
+        initControl();
+        var pic = "@Model.C_IMAGE";
+        if (pic != "") {
+            $(".file-panel").css("height", '0');
+            setPic(0, pic, "@desEncrypt.Encrypt(Model.C_IMAGE)");
+        }
+    });
+    function initControl() {
+        $("#C_PARENTID").bindSelect({
+            url: "/CMS/Column/GetTreeSelectJson?id=@Model.C_ID",
+        });
+        $("#C_PARENTID").val(@Model.C_PARENTID);
+        $("#C_PARENTID").select2();
+    }
+    function submitForm() {
+        if (!$('#columnForm').formValid()) {
+            return false;
+        }
+        var $hfPic = $("input[name='hidPic']");
+        var photo = "";
+        if ($hfPic.length > 0) {
+            photo = $.trim($("input[name='hidPic']").val());
+        }
+        var param = $("#columnForm").formSerialize();
+        param["ueditor_textarea_editorValue"] = "";
+        param["C_IMAGE"] = photo;
+        param["C_CONTENT"] = ue.getContent();
+        $.submitForm({
+            url: "/CMS/Column/SubmitForm",
+            param: param,
+            success: function () {
+                $.currentWindow().$("#gridList").resetSelection();
+                $.currentWindow().$("#gridList").trigger("reloadGrid");
+            }
+        })
+    }
+</script>
+

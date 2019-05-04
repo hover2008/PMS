@@ -1,0 +1,66 @@
+﻿@model JW.Domain.CMS.Entity.DictionaryEntity;
+@{
+    ViewBag.Title = "字典表单";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<form class="form-horizontal m-t" id="dicForm">
+    <input type="hidden" asp-for="D_ID" />
+    <div class="form-group">
+        <label class="col-sm-2 control-label">字典名称：*</label>
+        <div class="col-sm-8">
+            <input asp-for="D_NAME" class="form-control required" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">所属字典：*</label>
+        <div class="col-sm-8">
+            <select class="form-control m-b required" asp-for="D_PARENTID">
+                <option value="0">≡ 作为一级字典 ≡</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">备注</label>
+        <div class="col-sm-8">
+            <input asp-for="D_REMARK" class="form-control" />
+        </div>
+    </div> 
+    <div class="form-group">
+        <label class="col-sm-2 control-label">是否禁用：</label>
+        <div class="col-sm-8">
+            <label class="checkbox-inline i-checks">
+                <input asp-for="D_DISABLED">
+            </label>
+        </div>
+    </div>
+</form>
+<script type="text/javascript">
+    var keyValue = $("#D_ID").val();
+    $(document).ready(function () {
+        $('.i-checks').iCheck({
+            checkboxClass: 'icheckbox_square-green'
+        });
+        initControl();
+    });
+    function initControl() {
+        $("#D_PARENTID").bindSelect({
+            url: "/CMS/Dic/GetTreeSelectJson?id=" + keyValue,
+        });
+        $("#D_PARENTID").val(@Model.D_PARENTID);
+        $("#D_PARENTID").select2();
+    }
+    function submitForm() {
+        if (!$('#dicForm').formValid()) {
+            return false;
+        }
+        $.submitForm({
+            url: "/CMS/Dic/SubmitForm",
+            param: $("#dicForm").formSerialize(),
+            success: function () {
+                $.currentWindow().$("#gridList").resetSelection();
+                $.currentWindow().$("#gridList").trigger("reloadGrid");
+            }
+        })
+    }
+</script>
+

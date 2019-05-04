@@ -1,0 +1,132 @@
+﻿@{
+    ViewBag.Title = "新增用户到当前角色表单";
+    Layout = "~/Views/Shared/_Index.cshtml";
+}
+<input type="hidden" id="roleid" value="@ViewBag.RoleId" />
+<div class="panel panel-default">
+    <div class="panel-heading">
+        查询条件
+    </div>
+    <div class="panel-body">
+        <form id="CK-table-form">
+            <div class="col-sm-5">
+                <input type="text" class="form-control btn-outline" id="txtName" name="txtName" placeholder="在用户名中搜索">
+            </div>
+            <div class="col-sm-5">
+                <input type="text" class="form-control btn-outline" id="txtRealName" name="txtRealName" placeholder="在真实姓名中搜索">
+            </div>
+            <div class="col-sm-1">
+                <button id="CK-table-search" type="button" class="btn btn-default">
+                    <span class="glyphicon glyphicon-search" aria-hidden="true"></span>搜索
+                </button>
+            </div>
+            <div class="col-sm-1">
+                <button id="CK-table-reset" type="button" class="btn btn-default">
+                    <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>重置
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<div id="gridListToolbar">
+    <button id="CK-AC-useradd" ck-authorize="yes" class="btn btn-outline btn-default" type="button">
+        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>新增用户到当前角色
+    </button>
+    <button id="CK-AC-userdel" ck-authorize="yes" class="btn btn-outline btn-default" type="button">
+        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>从当前角色中移除选中的用户
+    </button>
+    <script>var ckCurrentCode = "AC"; $("#gridListToolbar").authorizeButton();</script>
+</div>
+<table id="gridList" data-toggle="table" data-select-item-name="userItem" data-mobile-responsive="true">
+    <thead>
+        <tr>
+            <th data-checkbox-field="U_ID" data-checkbox="true"></th>
+            <th data-formatter="indexFormatter" data-align="center" data-width="50px">#</th>
+            <th data-field="U_NAME" data-sortable="true">用户名</th>
+            <th data-field="U_REALNAME" data-sortable="true">真实姓名</th>
+            <th data-field="U_EMAIL" data-width="200px">电子邮箱</th>
+            <th data-field="U_MOBILE" data-align="center">手机号码</th>
+            <th data-field="U_TEL" data-width="100px" data-align="center">座机号码</th>
+            <th data-formatter="operatorFormatter" data-align="center" data-width="60px">操作</th>
+        </tr>
+    </thead>
+</table>
+<script type="text/javascript">
+    var $table = $('#gridList');
+    var $roleId = $.trim($("#roleid").val());
+    (function () {
+        $table.tableGrid({
+            url: "/Sys/Role/GetRoleUserList?r=" + Math.random(),
+            uniqueId: "U_ID",                   //每一行的唯一标识，一般为主键列
+            sortName: "U_ID",
+            queryParams: function (param) {
+                return {
+                    pageSize: param.pageSize,
+                    pageIndex: param.pageNumber,
+                    sortName: param.sortName,
+                    sortOrder: param.sortOrder,
+                    roleId: $roleId,
+                    name: $.trim($("#txtName").val()),
+                    realName: $.trim($("#txtRealName").val())
+                };
+            },//传递参数（*）
+        });
+        $('#gridListToolbar button').on('click', function () {
+            var othis = $(this),
+                index = othis.attr("id");
+            switch (index) {
+                case "CK-AC-useradd":
+                    top.layer.open({
+                        type: 2,
+                        title: '新增用户到当前角色',
+                        shade: 0.4,
+                        area: ['80%', '80%'],
+                        content: '/Sys/Role/AddUserForm?roleId=' + $roleId + '&r=' + Math.random(),
+                        end: function () {
+                            $table.tableGridRefresh();
+                        }
+                    });
+                    break;
+                case "CK-AC-userdel":
+                    var $selectOptions = $table.bootstrapTable('getSelections');
+                    if (!$selectOptions || $selectOptions.length < 1) {
+                        toastr.warning('请选择需要移除的选项');
+                        return;
+                    }
+                    var userids = [];
+                    $.each($selectOptions, function (i, item) {
+                        userids.push(item["U_ID"]);
+                    });
+                    $.deleteForm({
+                        url: "/Sys/Role/BatchRemoveUser?r=" + Math.random(),
+                        param: { 'roleId': $roleId, 'userIds': userids },
+                        success: function () {
+                            $table.tableGridRefresh();
+                        }
+                    })
+                    break;
+            }
+        });
+        $("#CK-table-search").click(function () {
+            $table.tableGridRefresh();
+        });
+        $("#CK-table-reset").click(function () {
+            $(":input", "#CK-table-form").not(':button').val('');
+            $table.tableGridRefresh();
+        });
+    })();
+    function operatorFormatter(value, row, index) {
+        var html = [];
+        html.push("<a href='javascript:;' onclick='del(" + row.U_ID + ")'>移除</a>&nbsp;&nbsp;");
+        return html.join('');
+    }
+    function del(userid) {
+        $.deleteForm({
+            url: "/Sys/Role/RemoveUser?r=" + Math.random(),
+            param: { 'roleId': $roleId, 'userId': userid },
+            success: function () {
+                $table.tableGridRefresh();
+            }
+        })
+    }
+</script>

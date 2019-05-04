@@ -1,0 +1,159 @@
+﻿@{
+    ViewBag.Title = "广告列表";
+    Layout = "~/Views/Shared/_Index.cshtml";
+} 
+<div class="panel panel-default">
+    <div class="panel-heading">
+        查询条件
+    </div>
+    <div class="panel-body">
+        <form id="CK-table-form">
+            <div class="col-sm-3">
+                <input type="text" class="form-control" id="txtName" name="txtName" placeholder="在名称中搜索">
+            </div>
+            <div class="col-sm-1">
+                <button id="CK-table-search" type="button" class="btn btn-default">
+                    <span class="glyphicon glyphicon-search" aria-hidden="true"></span>搜索
+                </button>
+            </div>
+            <div class="col-sm-1">
+                <button id="CK-table-reset" type="button" class="btn btn-default">
+                    <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>重置
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<div id="gridListToolbar">
+    <button id="CK-BI-add" ck-authorize="yes" class="btn btn-outline btn-default" type="button">
+        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>新增
+    </button>
+    <button id="CK-BI-edit" ck-authorize="yes" class="btn btn-outline btn-default" type="button">
+        <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>编辑
+    </button>
+    <button id="CK-BI-del" ck-authorize="yes" class="btn btn-outline btn-default" type="button">
+        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>删除
+    </button>
+    <button id="CK-BI-order" ck-authorize="yes" class="btn btn-outline btn-default" type="button">
+        <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>更新排序
+    </button>
+    <script>var ckCurrentCode = "BI"; $("#gridListToolbar").authorizeButton();</script>
+</div>
+<table id="gridList" data-toggle="table" data-click-to-select="true" data-select-item-name="rdMenuItem" data-mobile-responsive="true" data-sortable="false">
+    <thead>
+        <tr>
+            <th data-checkbox-field="A_ID" data-checkbox="true"></th>
+            <th data-formatter="indexFormatter" data-align="center" data-width="50px">#</th>
+            <th data-field="A_ORDERID" data-formatter="orderFormatter" data-align="center" data-width="100px" data-sortable="true">排序值</th>
+            <th data-field="A_TITLE" data-align="center" data-sortable="true">标题</th>
+            <th data-field="A_URL" data-align="center">链接地址</th>
+            <th data-field="A_STARTTIME" data-align="center" data-sortable="true">开始时间</th>
+            <th data-field="A_ENDTIME" data-align="center" data-sortable="true">结束时间</th>
+            <th data-field="A_STATE" data-align="center" data-sortable="true" data-formatter="stateFormatter">状态</th> 
+        </tr>
+    </thead>
+</table>
+<script type="text/javascript">
+    var $table = $('#gridList');
+    (function () {
+        $table.tableGrid({
+            url: "/CMS/Advert/GetGridJson?r=" + Math.random(),
+            uniqueId: "A_ID",                   //每一行的唯一标识，一般为主键列
+            sortName: "A_ID",                   //排序方式
+            queryParams: function (param) {
+                return {
+                    pageSize: param.pageSize,
+                    pageIndex: param.pageNumber,
+                    sortName: param.sortName,
+                    sortOrder: param.sortOrder,
+                    typeid:@ViewBag.TypeId,
+                    name: $.trim($("#txtName").val())
+                };
+            },//传递参数（*）
+        });
+        $('#gridListToolbar button').on('click', function () {
+            var othis = $(this),
+                index = othis.attr("id");
+            switch (index) {
+                case "CK-BI-add":
+                    save(0);
+                    break;
+                case "CK-BI-edit":
+                    var $selectOptions = $table.bootstrapTable('getSelections');
+                    if ($selectOptions.length > 1) {
+                        toastr.warning('只能选择一行进行编辑');
+                        return;
+                    }
+                    if ($selectOptions.length < 1) {
+                        toastr.warning('请选择需要编辑的选项');
+                        return;
+                    }
+                    var id = $selectOptions[0].A_ID;
+                    save(id);
+                    break;
+                case "CK-BI-del":
+                    var $selectOptions = $table.bootstrapTable('getSelections');
+                    if (!$selectOptions || $selectOptions.length < 1) {
+                        toastr.warning('请选择需要删除的选项');
+                        return;
+                    }
+                    var ids = [];
+                    $.each($selectOptions, function (i, item) {
+                        ids.push(item["A_ID"]);
+                    });
+                    $.deleteForm({
+                        url: "/CMS/Advert/BatchDeleteForm?r=" + Math.random(),
+                        param: { 'ids': ids.join(',') },
+                        success: function () {
+                            $table.tableGridRefresh();
+                        }
+                    });
+                    break;
+                case "CK-BI-order":
+                    var $selectOptions = $table.bootstrapTable('getSelections');
+                    if (!$selectOptions || $selectOptions.length <= 0) {
+                        toastr.warning('请选择需要更新排序的选项');
+                        return;
+                    }
+                    var ids = [], orderids = [];
+                    $.each($selectOptions, function (i, item) {
+                        ids.push(item["A_ID"]);
+                    });
+                    $.each($("tr.selected input[name='itemorder']"), function (i, item) {
+                        orderids.push($(this).val());
+                    });
+                    $.submitForm({
+                        url: "/CMS/Advert/UpdateOrder?r=" + Math.random(),
+                        param: { "ids": ids.join(','), "orderids": orderids.join(',') },
+                        success: function () {
+                            $table.tableGridRefresh();
+                        }
+                    });
+                    break;
+            }
+        });
+        $("#CK-table-search").click(function () {
+            $table.tableGridRefresh();
+        });
+        $("#CK-table-reset").click(function () {
+            $(":input", "#CK-table-form").not(':button').val('');
+            $table.tableGridRefresh();
+        });
+    })();
+    function stateFormatter(value, row, index) {
+        return value == 1 ? "<i class=\"fa fa-toggle-on\" onclick='set(" + row.A_ID + ",0)'></i>" : "<i class=\"fa fa-toggle-off\" onclick='set(" + row.A_ID + ",1)'></i>";
+    } 
+    function save(id) {
+        location.href = "/CMS/Advert/Form?id=" + id + '&typeid=@ViewBag.TypeId&r=' + Math.random();
+    } 
+    function set(id, state) {
+        $.submitForm({
+            url: "/CMS/Advert/Set?r=" + Math.random(),
+            param: { 'id': id, 'state': state },
+            success: function () {
+                $table.tableGridRefresh();
+            }
+        })
+    }
+</script>
+

@@ -1,0 +1,68 @@
+﻿@model JW.Domain.CMS.Settings.EmailSettings
+@{
+    ViewBag.Title = "邮箱配置表单";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+
+<form class="form-horizontal m-t" id="emailForm" autocomplete="off">
+    <div class="form-group">
+        <label class="col-sm-2 control-label">SMTP地址：*</label>
+        <div class="col-sm-10">
+            <input asp-for="SMTPServerAddress" class="form-control required" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">SMTP端口号：*</label>
+        <div class="col-sm-10">
+            <input asp-for="SMTPPort" class="form-control required digits" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">SMTP用户名：*</label>
+        <div class="col-sm-10">
+            <input asp-for="SMTPUserName" class="form-control required" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">显示发件人：*</label>
+        <div class="col-sm-10">
+            <input asp-for="MailSender" class="form-control required" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">SMTP密码：*</label>
+        <div class="col-sm-10">
+            <input asp-for="SMTPUserPassword" class="form-control required" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">是否启用SSL连接：</label>
+        <div class="col-sm-10">
+            <label class="checkbox-inline i-checks">
+                <input type="checkbox" id="EnableSsl" name="EnableSsl" @(Model.EnableSsl == "true" ? "checked='checked'" : "") />
+            </label>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-sm-12 col-sm-offset-3">
+            <button class="btn btn-white" type="reset" style="margin-right:40px">重置</button>
+            <button class="btn btn-primary" type="button" id="btnSubmit">提交</button>
+        </div>
+    </div>
+</form>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('.i-checks').iCheck({
+            checkboxClass: 'icheckbox_square-green'
+        });
+        $("#btnSubmit").click(function () {
+            if (!$('#emailForm').formValid()) {
+                return false;
+            }
+            $.ajaxCustom({ 
+                url: "/CMS/Setting/Email",
+                param: $("#emailForm").formSerialize()
+            })
+        })
+    });
+</script>

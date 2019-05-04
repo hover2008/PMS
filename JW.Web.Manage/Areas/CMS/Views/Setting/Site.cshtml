@@ -1,0 +1,113 @@
+﻿@model JW.Domain.CMS.Settings.SiteSettings
+@{
+    ViewBag.Title = "站点配置表单";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<form class="form-horizontal m-t" id="siteForm" autocomplete="off">
+    <div class="form-group">
+        <label class="col-sm-2 control-label">英文名称：</label>
+        <div class="col-sm-10">
+            <input asp-for="EnglishName" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">网站域名：</label>
+        <div class="col-sm-10">
+            <input asp-for="URL" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">网站名称：</label>
+        <div class="col-sm-10">
+            <input asp-for="SiteName" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">公司名称：</label>
+        <div class="col-sm-10">
+            <input asp-for="CompanyName" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">邮编：</label>
+        <div class="col-sm-10">
+            <input asp-for="Zip" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">地址：</label>
+        <div class="col-sm-10">
+            <input asp-for="Address" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">联系电话：</label>
+        <div class="col-sm-10">
+            <input asp-for="Tel" class="form-control" placeholder="多个以空格隔开" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">传真：</label>
+        <div class="col-sm-10">
+            <input asp-for="Fax" class="form-control" placeholder="多个以空格隔开" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">电子邮件：</label>
+        <div class="col-sm-10">
+            <input asp-for="Email" class="form-control" placeholder="多个以空格隔开" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">备案号：*</label>
+        <div class="col-sm-10">
+            <input asp-for="Icp" class="form-control required" placeholder="工信部备案号" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">版权：*</label>
+        <div class="col-sm-10">
+            <input asp-for="Copyright" class="form-control required" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">SEO标题：</label>
+        <div class="col-sm-10">
+            <input asp-for="MateTitle" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">SEO关键字：</label>
+        <div class="col-sm-10">
+            <input asp-for="MateKeywords" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">SEO描述：</label>
+        <div class="col-sm-10">
+            <input asp-for="MateDescription" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-sm-12 col-sm-offset-3">
+            <button class="btn btn-white" type="reset" style="margin-right:40px">重置</button>
+            <button class="btn btn-primary" type="button" id="btnSubmit">提交</button>
+        </div>
+    </div>
+</form> 
+<script type="text/javascript">
+    $(function () {
+        $('.i-checks').iCheck({
+            checkboxClass: 'icheckbox_square-green'
+        });
+        $("#btnSubmit").click(function () {
+            if (!$('#siteForm').formValid()) {
+                return false;
+            }
+            $.ajaxCustom({
+                url: "/CMS/Setting/Site",
+                param: $("#siteForm").formSerialize()
+            })
+        })
+    });
+</script>
