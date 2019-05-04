@@ -1,42 +1,164 @@
-﻿@model JW.Domain.PMS.Entity.DJDLEntity
+﻿@model JW.Domain.PMS.Entity.WLDWEntity
 
 @{
-    ViewBag.Title = "单据大类表单";
+    ViewBag.Title = "往来单位表单";
     Layout = "~/Views/Shared/_Form.cshtml";
 }
 
 <form class="form-horizontal m-t" id="modForm">
     <input type="hidden" asp-for="Id" />
     <div class="form-group">
+        <label class="col-sm-2 control-label">分类代码：*</label>
+        <div class="col-sm-4">
+            <select class="form-control required" asp-for="DWLBId">
+            </select>
+        </div>
+        <label class="col-sm-2 control-label">是否收款单位：</label>
+        <div class="col-sm-4">
+            <label class="checkbox-inline i-checks">
+                <input asp-for="IsSKDW" />
+            </label>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">编号：*</label>
+        <div class="col-sm-4">
+            <input asp-for="Num" class="form-control required" />
+        </div>
+        <label class="col-sm-2 control-label">档案序号：*</label>
+        <div class="col-sm-4">
+            <input asp-for="FileNumber" class="form-control required digits" />
+        </div>
+    </div>
+    <div class="form-group">
         <label class="col-sm-2 control-label">名称：*</label>
         <div class="col-sm-10">
             <input asp-for="Name" class="form-control required" />
         </div>
+    </div> 
+    <div class="form-group">
+        <label class="col-sm-2 control-label">简称：</label>
+        <div class="col-sm-4">
+            <input asp-for="SubName" class="form-control" />
+        </div>
+        <label class="col-sm-2 control-label">传真：</label>
+        <div class="col-sm-4">
+            <input asp-for="Fax" class="form-control" />
+        </div>
     </div>
     <div class="form-group">
-        <label class="col-sm-2 control-label">是否禁用：</label>
+        <label class="col-sm-2 control-label">联系人：</label>
         <div class="col-sm-10">
+            <input asp-for="Contacts" class="form-control" />
+        </div>
+    </div> 
+    <div class="form-group">
+        <label class="col-sm-2 control-label">电话：</label>
+        <div class="col-sm-10">
+            <input asp-for="Tel" class="form-control" />
+        </div>
+    </div> 
+    <div class="form-group">
+        <label class="col-sm-2 control-label">预约收款月份差：</label>
+        <div class="col-sm-2">
+            <input asp-for="YYSKYFC" class="form-control digits" />
+        </div>
+        <label class="col-sm-2 control-label">是否离场：</label>
+        <div class="col-sm-1">
             <label class="checkbox-inline i-checks">
-                <input asp-for="IsDisabled" />
-            </label>
+                <input asp-for="IsLeave" />
+            </label> 
+        </div>
+        <label class="col-sm-2 control-label">离场时间：</label>
+        <div class="col-sm-3">
+            <input id="LeaveTime" name="LeaveTime" class="form-control layer-date" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">离场备注：</label>
+        <div class="col-sm-10">
+            <input asp-for="LeaveRemark" class="form-control" />
+        </div>
+    </div> 
+    <div class="form-group">
+        <label class="col-sm-2 control-label">邮箱：</label>
+        <div class="col-sm-4">
+            <input asp-for="Email" class="form-control" />
+        </div>
+        <label class="col-sm-2 control-label">网址：</label>
+        <div class="col-sm-4">
+            <input asp-for="Url" class="form-control" />
+        </div>
+    </div> 
+    <div class="form-group">
+        <label class="col-sm-2 control-label">地址：</label>
+        <div class="col-sm-4">
+            <input asp-for="Address" class="form-control" />
+        </div> 
+        <label class="col-sm-2 control-label">邮编：</label>
+        <div class="col-sm-4">
+            <input asp-for="PostCode" class="form-control" />
+        </div>
+    </div> 
+    <div class="form-group">
+        <label class="col-sm-2 control-label">开户行：</label>
+        <div class="col-sm-10">
+            <input asp-for="OpeningBank" class="form-control" />
+        </div>
+    </div> 
+    <div class="form-group">
+        <label class="col-sm-2 control-label">帐号：</label>
+        <div class="col-sm-10">
+            <input asp-for="Accounts" class="form-control" />
+        </div>
+    </div> 
+    <div class="form-group">
+        <label class="col-sm-2 control-label">税号：</label>
+        <div class="col-sm-10">
+            <input asp-for="Tax" class="form-control" />
+        </div>
+    </div> 
+    <div class="form-group">
+        <label class="col-sm-2 control-label">备注：</label>
+        <div class="col-sm-10">
+            <input asp-for="Remark" class="form-control" />
         </div>
     </div> 
 </form>
 <script type="text/javascript"> 
+    //日期时间范围
+    laydate.render({
+        elem: '#LeaveTime',
+        type: 'datetime',
+        choose: function (value) {
+            if (value != null) {
+                $("#LeaveTime").val();
+            }
+        }
+    });
     $(document).ready(function () {
         $('.i-checks').iCheck({
             checkboxClass: 'icheckbox_square-green'
         });
-    }); 
+        initControl();
+    });
+    function initControl() {
+        $("#DWLBId").bindSelect({
+            url: "/PMS/DWLB/GetTreeSelectJson?id=" + $("#Id").val() + '&disabled=true',
+        });
+        $("#DWLBId").val(@Model.DWLBId);
+        $("#DWLBId").select2();
+    }
     function submitForm() {
         if (!$('#modForm').formValid()) {
             return false;
         }
         $.submitForm({
-            url: "/PMS/DJDL/SubmitForm",
+            url: "/PMS/DWLB/SubmitForm",
             param: $("#modForm").formSerialize(),
             success: function () {
-                $.currentWindow().$("#gridList").bootstrapTable('refresh');
+                $.currentWindow().$("#gridList").resetSelection();
+                $.currentWindow().$("#gridList").trigger("reloadGrid");
             }
         })
     }

@@ -1,12 +1,14 @@
-﻿using JW.Data.IRepository;
+﻿using JW.Core.Data.Base;
+using JW.Data.IRepository;
 using JW.Domain;
+using JW.Domain.PMS.RequestParam;
 using JW.Domain.PMS.ResposneEntity;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace JW.Data.PMS.IRepository
 {
-    public partial interface IDWLBRepository<TEntity> : IBaseRepository<TEntity> where TEntity : BaseEntity
+    public partial interface IJELXRepository<TEntity> : IBaseRepository<TEntity> where TEntity : BaseEntity
     {
         #region Methods
 
@@ -17,8 +19,8 @@ namespace JW.Data.PMS.IRepository
         #region Methods Async
 
         Task<bool> UpdateDisabledByIdAsync(int id, bool disabled);
-        Task<IEnumerable<TEntity>> GetAllListAsync();
-        Task<IEnumerable<SelectDWLBEntity>> GetSelectCanUseListAsync(int id = 0);
+        Task<BasePagedListModel<TEntity>> GetListAsync(JELXSearchParam param);
+        Task<IEnumerable<SelectJELXEntity>> GetSelectCanUseListAsync();
 
         #endregion
     }

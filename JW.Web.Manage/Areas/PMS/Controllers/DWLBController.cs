@@ -70,7 +70,7 @@ namespace JW.Web.Manage.Areas.PMS.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetTreeSelectJson(int id)
+        public async Task<IActionResult> GetTreeSelectJson(int id = 0, bool disabled = false)
         {
             IEnumerable<SelectDWLBEntity> data = await service.GetSelectCanUseListAsync(id);
             var treeList = new List<TreeSelectModel>();
@@ -80,6 +80,10 @@ namespace JW.Web.Manage.Areas.PMS.Controllers
                 treeModel.id = item.Id;
                 treeModel.text = item.Name;
                 treeModel.parentId = item.PId;
+                if (disabled)
+                {
+                    treeModel.disabled = item.PId == 0;
+                }
                 treeList.Add(treeModel);
             }
             return Content(treeList.TreeSelectJson());
@@ -108,21 +112,6 @@ namespace JW.Web.Manage.Areas.PMS.Controllers
         public async Task<IActionResult> Set(int id, bool action) => Json(await service.UpdateDisabledByIdAsync(id, action));
 
         #endregion 
-
-        [HttpGet]
-        public async Task<IActionResult> GetSelectJson()
-        {
-            IEnumerable<SelectDWLBEntity> data = await service.GetSelectCanUseListAsync();
-            var treeList = new List<SelectModel>();
-            foreach (SelectDWLBEntity item in data)
-            {
-                SelectModel treeModel = new SelectModel();
-                treeModel.id = item.Id;
-                treeModel.text = item.Name;
-                treeList.Add(treeModel);
-            }
-            return Json(treeList);
-        }
 
         #endregion
     }

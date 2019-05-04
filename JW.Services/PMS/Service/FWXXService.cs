@@ -1,11 +1,12 @@
-﻿using JW.Core.Extensions;
+﻿using JW.Core.Data.Base;
+using JW.Core.Extensions;
 using JW.Core.ResponseResult;
 using JW.Data.PMS.IRepository;
 using JW.Domain.PMS.Entity;
-using JW.Domain.PMS.ResposneEntity;
+using JW.Domain.PMS.RequestParam;
 using JW.Services.IService;
 using JW.Services.PMS.IService;
-using System.Collections.Generic;
+using System;
 using System.Threading.Tasks;
 
 namespace JW.Services.CMS.Service
@@ -13,18 +14,18 @@ namespace JW.Services.CMS.Service
     /// <summary>
     /// 模型服务
     /// </summary>
-    public partial class DWLBService : BaseService<DWLBEntity, IDWLBRepository<DWLBEntity>>, IDWLBService<DWLBEntity>
+    public partial class FWXXService : BaseService<FWXXEntity, IFWXXRepository<FWXXEntity>>, IFWXXService<FWXXEntity>
     {
         #region Fields
 
-        private readonly IDWLBRepository<DWLBEntity> repository;
+        private readonly IFWXXRepository<FWXXEntity> repository;
         private readonly Messages messages;
 
         #endregion
 
         #region Ctor
 
-        public DWLBService(IDWLBRepository<DWLBEntity> repository,
+        public FWXXService(IFWXXRepository<FWXXEntity> repository,
             Messages messages)
             : base(repository)
         {
@@ -36,9 +37,9 @@ namespace JW.Services.CMS.Service
 
         #region Methods
 
-        public Messages Save(DWLBEntity model)
+        public Messages Save(FWXXEntity model)
         {
-            if (model != null && model.Name.IsNotNullOrEmpty())
+            if (model != null && model.FWBH.IsNotNullOrEmpty() && model.FWWZ.IsNotNullOrEmpty() && model.FWMJ.IsNotNullOrEmpty())
             { 
                 int result = repository.Save(model);
                 if (result > 0)
@@ -46,13 +47,9 @@ namespace JW.Services.CMS.Service
                     messages.Msg = "保存成功！！";
                     messages.Success = true;
                 }
-                else if (result == -9999)
-                {
-                    messages.Msg = "存在相同分类代码的数据";
-                }
                 else if (result == -10000)
                 {
-                    messages.Msg = "存在相同分类名称的数据";
+                    messages.Msg = "存在相同房屋编号的数据";
                 }
                 else
                 {
@@ -81,14 +78,16 @@ namespace JW.Services.CMS.Service
             return messages;
         }
 
-        public async Task<IEnumerable<DWLBEntity>> GetAllListAsync()
+        /// <summary>
+        /// 获取列表
+        /// </summary>
+        /// <param name="param">搜索实体</param>
+        public Task<BasePagedListModel<FWXXEntity>> GetListAsync(FWXXSearchParam param)
         {
-            return await repository.GetAllListAsync();
-        }
-
-        public async Task<IEnumerable<SelectDWLBEntity>> GetSelectCanUseListAsync(int id = 0)
-        {
-            return await repository.GetSelectCanUseListAsync(id);
+            if (param == null)
+                throw new ArgumentNullException(nameof(param));
+            
+            return repository.GetListAsync(param);
         }
 
         #endregion

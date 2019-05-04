@@ -15,6 +15,11 @@ namespace JW.Domain.PMS.Entity
         public string Num { get; set; }
 
         /// <summary>
+        /// 单位分类编号
+        /// </summary>
+        public int DWLBId { get; set; }
+
+        /// <summary>
         /// 名称
         /// </summary>
         public string Name { get; set; }
@@ -80,11 +85,6 @@ namespace JW.Domain.PMS.Entity
         public string Remark { get; set; }
 
         /// <summary>
-        /// 分类代码
-        /// </summary>
-        public string Code { get; set; }
-
-        /// <summary>
         /// 档案序号
         /// </summary>
         public int FileNumber { get; set; }
@@ -115,8 +115,33 @@ namespace JW.Domain.PMS.Entity
         public string LeaveRemark { get; set; }
 
         /// <summary>
-        /// 是否禁用（1-已禁用，0-未禁用）
+        /// 创建用户编号
         /// </summary>
-        public bool IsDisabled { get; set; }
+        public int CreateUserId { get; set; }
+
+        /// <summary>
+        /// 创建用户名称
+        /// </summary>
+        public string CreateUserName { get; set; }
+        
+        /// <summary>
+        /// 创建时间
+        /// </summary>
+        public DateTime CreateTime { get; set; }
+
+        /// <summary>
+        /// 最后更新用户编号
+        /// </summary>
+        public int LastUpdateUserId { get; set; }
+
+        /// <summary>
+        /// 最后更新用户名称
+        /// </summary>
+        public string LastUpdateUserName { get; set; }
+
+        /// <summary>
+        /// 最后更新时间
+        /// </summary>
+        public DateTime LastUpdateTime { get; set; }
     }
 }

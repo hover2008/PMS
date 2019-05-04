@@ -373,7 +373,11 @@ $.fn.bindSelect = function (options) {
             async: false,
             success: function (data) {
                 $.each(data, function (i) {
-                    $element.append($("<option></option>").val(data[i][options.id]).html(data[i][options.text]));
+                    var $option = "<option></option>";
+                    if (data[i]["disabled"]) {
+                        $option = "<option disabled='disabled'></option>";
+                    }
+                    $element.append($($option).val(data[i][options.id]).html(data[i][options.text]));
                 });
                 $element.select2({
                     minimumResultsForSearch: options.search == true ? 0 : -1

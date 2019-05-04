@@ -17,17 +17,17 @@ namespace JW.Domain.Shared
         private static string TreeSelectJson(List<TreeSelectModel> data, int parentId, string blank)
         {
             StringBuilder sb = new StringBuilder();
-            var ChildNodeList = data.FindAll(t => t.parentId == parentId);
+            var childNodeList = data.FindAll(t => t.parentId == parentId);
             var tabline = "";
             if (parentId != 0)
             {
                 tabline = "　　";
             }
-            if (ChildNodeList.Count > 0)
+            if (childNodeList.Count > 0)
             {
                 tabline = tabline + blank;
             }
-            foreach (TreeSelectModel entity in ChildNodeList)
+            foreach (TreeSelectModel entity in childNodeList)
             {
                 entity.text = tabline + entity.text;
                 string strJson = entity.ToJson();

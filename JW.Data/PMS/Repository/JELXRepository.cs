@@ -1,8 +1,11 @@
 ﻿using Dapper;
+using JW.Core.Data.Base;
 using JW.Core.Data.Dapper;
+using JW.Core.Extensions;
 using JW.Data.PMS.IRepository;
 using JW.Data.Repository;
 using JW.Domain.PMS.Entity;
+using JW.Domain.PMS.RequestParam;
 using JW.Domain.PMS.ResposneEntity;
 using Microsoft.Extensions.Logging;
 using System;
@@ -14,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace JW.Data.CMS.Repository
 {
-    public partial class DWLBRepository : BaseRepository<DWLBEntity, DWLBRepository>, IDWLBRepository<DWLBEntity>
+    public partial class JELXRepository : BaseRepository<JELXEntity, JELXRepository>, IJELXRepository<JELXEntity>
     {
         #region Fields
 
@@ -24,7 +27,7 @@ namespace JW.Data.CMS.Repository
 
         #region Ctor
 
-        public DWLBRepository(ILogger<DWLBRepository> logger,
+        public JELXRepository(ILogger<JELXRepository> logger,
             IConnectionProvider connectionProvider,
             IBasePageListRepository pageListRepository)
             : base(logger, connectionProvider)
@@ -39,7 +42,7 @@ namespace JW.Data.CMS.Repository
         /// <summary>
         /// 保存一条数据
         /// </summary>
-        public int Save(DWLBEntity model)
+        public int Save(JELXEntity model)
         {
             try
             {
@@ -47,26 +50,25 @@ namespace JW.Data.CMS.Repository
                 {
                     DynamicParameters parameters = new DynamicParameters();
                     parameters.Add("id", model.Id);
-                    parameters.Add("code", model.Code); 
                     parameters.Add("name", model.Name); 
-                    parameters.Add("pid", model.PId); 
+                    parameters.Add("months", model.Months); 
                     parameters.Add("disabled", model.IsDisabled);
                     parameters.Add("result", 0, DbType.Int32, ParameterDirection.Output);
-                    conn.Execute("sp_save_P_DWLB", parameters, commandType: CommandType.StoredProcedure);
+                    conn.Execute("sp_save_P_JELX", parameters, commandType: CommandType.StoredProcedure);
                     return parameters.Get<int>("result");
                 }
             }
             catch (ArgumentNullException ex)
             {
-                logger.LogError("调用方法Save(DWLBEntity model)发生ArgumentNullException，异常信息：{0}", ex);
+                logger.LogError("调用方法Save(JELXEntity model)发生ArgumentNullException，异常信息：{0}", ex);
             }
             catch (SqlException ex)
             {
-                logger.LogError("调用方法Save(DWLBEntity model)发生SqlException，异常信息：{0}", ex);
+                logger.LogError("调用方法Save(JELXEntity model)发生SqlException，异常信息：{0}", ex);
             }
             catch (Exception ex)
             {
-                logger.LogError("调用方法Save(DWLBEntity model)发生Exception，异常信息：{0}", ex);
+                logger.LogError("调用方法Save(JELXEntity model)发生Exception，异常信息：{0}", ex);
             }
             return -1;
         } 
@@ -87,7 +89,7 @@ namespace JW.Data.CMS.Repository
             {
                 using (var conn = connectionProvider.CreateConn())
                 {
-                    string sql = "UPDATE [P_DWLB] SET IsDisabled=@disabled WHERE Id=@id";
+                    string sql = "UPDATE [P_JELX] SET IsDisabled=@disabled WHERE Id=@id";
                     return await conn.ExecuteAsync(sql, new { disabled, id }) > 0;
                 }
             }
@@ -107,70 +109,80 @@ namespace JW.Data.CMS.Repository
         }
 
         /// <summary>
-        /// 获取所有的数据
+        /// 获取列表
         /// </summary>
-        /// <returns></returns>
-        public async Task<IEnumerable<DWLBEntity>> GetAllListAsync()
+        /// <param name="param">搜索实体</param>
+        public async Task<BasePagedListModel<JELXEntity>> GetListAsync(JELXSearchParam param)
         {
-            IEnumerable<DWLBEntity> list = new List<DWLBEntity>();
+            BasePagedListModel<JELXEntity> list = new BasePagedListModel<JELXEntity>();
             try
             {
-                using (var conn = connectionProvider.CreateConn())
+                #region 条件与排序
+
+                StringBuilder condition = new StringBuilder("1=1");
+                if (param.Name.IsNotNullOrEmpty())
                 {
-                    string sql = "SELECT * FROM [P_DWLB]";
-                    return await conn.QueryAsync<DWLBEntity>(sql);
+                    condition.AppendFormat(" AND Name like '%{0}%'", param.Name.FilterSql());
                 }
+                #endregion
+
+                PageCriteriaModel criteria = new PageCriteriaModel();
+                criteria.Condition = condition.ToString();
+                criteria.PageIndex = param.PageIndex;
+                criteria.Fields = "*";
+                criteria.PageSize = param.PageSize;
+                criteria.TableName = "P_JELX";
+                criteria.PrimaryKey = "Id";
+                if (param.SortName.IsNotNullOrEmpty() && param.SortOrder.IsNotNullOrEmpty())
+                {
+                    criteria.Sort = $"{param.SortName.FilterSql()} {param.SortOrder.FilterSql()}";
+                }
+                list = await pageListRepository.GetPageDataAsync<JELXEntity>(connectionProvider, criteria);
             }
             catch (ArgumentNullException ex)
             {
-                logger.LogError("调用方法GetAllListAsync()发生ArgumentNullException，异常信息：{0}", ex);
+                logger.LogError("调用方法GetListAsync(JELXSearchParam param)发生ArgumentNullException，异常信息：{0}", ex);
             }
             catch (SqlException ex)
             {
-                logger.LogError("调用方法GetAllListAsync()发生SqlException，异常信息：{0}", ex);
+                logger.LogError("调用方法GetListAsync(JELXSearchParam param)发生SqlException，异常信息：{0}", ex);
             }
             catch (Exception ex)
             {
-                logger.LogError("调用方法GetAllListAsync()发生Exception，异常信息：{0}", ex);
+                logger.LogError("调用方法GetListAsync(JELXSearchParam param)发生Exception，异常信息：{0}", ex);
             }
             return list;
         }
 
         /// <summary>
-        /// 除ID以外的可用字典实体数据集合
+        /// 获取可用于下拉框选择的JELX数据
         /// </summary>
-        /// <param name="id">字典编号</param>
         /// <returns></returns>
-        public async Task<IEnumerable<SelectDWLBEntity>> GetSelectCanUseListAsync(int id = 0)
+        public async Task<IEnumerable<SelectJELXEntity>> GetSelectCanUseListAsync()
         {
-            IEnumerable<SelectDWLBEntity> list = new List<SelectDWLBEntity>();
+            IEnumerable<SelectJELXEntity> list = new List<SelectJELXEntity>();
             try
             {
                 using (var conn = connectionProvider.CreateConn())
                 {
-                    StringBuilder sql = new StringBuilder("SELECT Id,PId,Name FROM [P_DWLB] WHERE IsDisabled=0");
-                    if (id > 0)
-                    {
-                        sql.Append($" AND Id<>{id}");
-                    }
-                    sql.Append(" ORDER BY Code ASC");
-                    list = await conn.QueryAsync<SelectDWLBEntity>(sql.ToString());
+                    string sql = "SELECT Id,Name FROM P_JELX WHERE IsDisabled=0 ORDER BY Id ASC";
+                    list = await conn.QueryAsync<SelectJELXEntity>(sql);
                 }
             }
             catch (ArgumentNullException ex)
             {
-                logger.LogError("调用方法GetSelectCanUseListAsync(int id)发生ArgumentNullException，异常信息：{0}", ex);
+                logger.LogError("调用方法GetSelectCanUseListAsync()发生ArgumentNullException，异常信息：{0}", ex);
             }
             catch (SqlException ex)
             {
-                logger.LogError("调用方法GetSelectCanUseListAsync(int id)发生SqlException，异常信息：{0}", ex);
+                logger.LogError("调用方法GetSelectCanUseListAsync()发生SqlException，异常信息：{0}", ex);
             }
             catch (Exception ex)
             {
-                logger.LogError("调用方法GetSelectCanUseListAsync(int id)发生Exception，异常信息：{0}", ex);
+                logger.LogError("调用方法GetSelectCanUseListAsync()发生Exception，异常信息：{0}", ex);
             }
             return list;
-        } 
+        }
 
         #endregion
     }

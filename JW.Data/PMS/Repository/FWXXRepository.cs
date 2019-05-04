@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace JW.Data.CMS.Repository
 {
-    public partial class WLDWRepository : BaseRepository<WLDWEntity, WLDWRepository>, IWLDWRepository<WLDWEntity>
+    public partial class FWXXRepository : BaseRepository<FWXXEntity, FWXXRepository>, IFWXXRepository<FWXXEntity>
     {
         #region Fields
 
@@ -25,7 +25,7 @@ namespace JW.Data.CMS.Repository
 
         #region Ctor
 
-        public WLDWRepository(ILogger<WLDWRepository> logger,
+        public FWXXRepository(ILogger<FWXXRepository> logger,
             IConnectionProvider connectionProvider,
             IBasePageListRepository pageListRepository)
             : base(logger, connectionProvider)
@@ -40,7 +40,7 @@ namespace JW.Data.CMS.Repository
         /// <summary>
         /// 保存一条数据
         /// </summary>
-        public int Save(WLDWEntity model)
+        public int Save(FWXXEntity model)
         {
             try
             {
@@ -48,25 +48,26 @@ namespace JW.Data.CMS.Repository
                 {
                     DynamicParameters parameters = new DynamicParameters();
                     parameters.Add("id", model.Id);
-                    parameters.Add("num", model.Num); 
-                    parameters.Add("name", model.Name); 
-                    
+                    parameters.Add("bh", model.FWBH); 
+                    parameters.Add("wz", model.FWWZ);
+                    parameters.Add("mj", model.FWMJ);
+                    parameters.Add("disabled", model.IsDisabled);
                     parameters.Add("result", 0, DbType.Int32, ParameterDirection.Output);
-                    conn.Execute("sp_save_P_WLDW", parameters, commandType: CommandType.StoredProcedure);
+                    conn.Execute("sp_save_P_FWXX", parameters, commandType: CommandType.StoredProcedure);
                     return parameters.Get<int>("result");
                 }
             }
             catch (ArgumentNullException ex)
             {
-                logger.LogError("调用方法Save(WLDWEntity model)发生ArgumentNullException，异常信息：{0}", ex);
+                logger.LogError("调用方法Save(FWXXEntity model)发生ArgumentNullException，异常信息：{0}", ex);
             }
             catch (SqlException ex)
             {
-                logger.LogError("调用方法Save(WLDWEntity model)发生SqlException，异常信息：{0}", ex);
+                logger.LogError("调用方法Save(FWXXEntity model)发生SqlException，异常信息：{0}", ex);
             }
             catch (Exception ex)
             {
-                logger.LogError("调用方法Save(WLDWEntity model)发生Exception，异常信息：{0}", ex);
+                logger.LogError("调用方法Save(FWXXEntity model)发生Exception，异常信息：{0}", ex);
             }
             return -1;
         } 
@@ -87,7 +88,7 @@ namespace JW.Data.CMS.Repository
             {
                 using (var conn = connectionProvider.CreateConn())
                 {
-                    string sql = "UPDATE [P_WLDW] SET IsDisabled=@disabled WHERE Id=@id";
+                    string sql = "UPDATE [P_FWXX] SET IsDisabled=@disabled WHERE Id=@id";
                     return await conn.ExecuteAsync(sql, new { disabled, id }) > 0;
                 }
             }
@@ -110,17 +111,17 @@ namespace JW.Data.CMS.Repository
         /// 获取列表
         /// </summary>
         /// <param name="param">搜索实体</param>
-        public async Task<BasePagedListModel<WLDWEntity>> GetListAsync(WLDWSearchParam param)
+        public async Task<BasePagedListModel<FWXXEntity>> GetListAsync(FWXXSearchParam param)
         {
-            BasePagedListModel<WLDWEntity> list = new BasePagedListModel<WLDWEntity>();
+            BasePagedListModel<FWXXEntity> list = new BasePagedListModel<FWXXEntity>();
             try
             {
                 #region 条件与排序
 
                 StringBuilder condition = new StringBuilder("1=1");
-                if (param.Name.IsNotNullOrEmpty())
+                if (param.BH.IsNotNullOrEmpty())
                 {
-                    condition.AppendFormat(" AND Name like '%{0}%'", param.Name.FilterSql());
+                    condition.AppendFormat(" AND FWBH like '%{0}%'", param.BH.FilterSql());
                 }
                 #endregion
 
@@ -129,29 +130,29 @@ namespace JW.Data.CMS.Repository
                 criteria.PageIndex = param.PageIndex;
                 criteria.Fields = "*";
                 criteria.PageSize = param.PageSize;
-                criteria.TableName = "P_WLDW";
+                criteria.TableName = "P_FWXX";
                 criteria.PrimaryKey = "Id";
                 if (param.SortName.IsNotNullOrEmpty() && param.SortOrder.IsNotNullOrEmpty())
                 {
                     criteria.Sort = $"{param.SortName.FilterSql()} {param.SortOrder.FilterSql()}";
                 }
-                list = await pageListRepository.GetPageDataAsync<WLDWEntity>(connectionProvider, criteria);
+                list = await pageListRepository.GetPageDataAsync<FWXXEntity>(connectionProvider, criteria);
             }
             catch (ArgumentNullException ex)
             {
-                logger.LogError("调用方法GetListAsync(WLDWSearchParam param)发生ArgumentNullException，异常信息：{0}", ex);
+                logger.LogError("调用方法GetListAsync(FWXXSearchParam param)发生ArgumentNullException，异常信息：{0}", ex);
             }
             catch (SqlException ex)
             {
-                logger.LogError("调用方法GetListAsync(WLDWSearchParam param)发生SqlException，异常信息：{0}", ex);
+                logger.LogError("调用方法GetListAsync(FWXXSearchParam param)发生SqlException，异常信息：{0}", ex);
             }
             catch (Exception ex)
             {
-                logger.LogError("调用方法GetListAsync(WLDWSearchParam param)发生Exception，异常信息：{0}", ex);
+                logger.LogError("调用方法GetListAsync(FWXXSearchParam param)发生Exception，异常信息：{0}", ex);
             }
             return list;
         }
-
+        
         #endregion
     }
 }

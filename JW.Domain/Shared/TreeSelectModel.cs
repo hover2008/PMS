@@ -6,5 +6,6 @@
         public string text { get; set; }
         public int parentId { get; set; }
         public object data { get; set; }
+        public bool disabled { get; set; }
     }
 }
